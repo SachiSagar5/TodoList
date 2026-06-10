@@ -10,6 +10,8 @@ const __dirname = path.dirname(__filename);
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Set `base` so GitHub Pages serves assets from the repo name when building in CI
+  base: process.env.CI ? `/${(process.env.GITHUB_REPOSITORY || 'SachiSagar5/TodoList').split('/')[1]}/` : '/',
   plugins: [react(), tailwindcss(), viteSingleFile()],
   resolve: {
     alias: {
