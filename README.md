@@ -2,6 +2,8 @@
 
 A full-featured productivity application built with React, TypeScript, and Tailwind CSS. Features task management with priorities & timers, calendar planner, notes, pomodoro timer, and dashboard — all with authentication, optional cloud sync, and native app builds.
 
+🔗 **Live App:** [https://sachisagar5.github.io/TodoList](https://sachisagar5.github.io/TodoList)
+
 ![TaskMaster](https://img.shields.io/badge/TaskMaster-Productivity-indigo)
 ![React](https://img.shields.io/badge/React-19-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue)
