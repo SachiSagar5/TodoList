@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth, getToken } from '../contexts/AuthContext';
+import { API_URL } from '../config';
 
-const API = 'http://localhost:3001';
+const API = API_URL;
 
 export function useApiCollection<T extends { id: string }>(
   collectionName: string

@@ -10,6 +10,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth, googleProvider, isFirebaseConfigured } from '../firebase';
+import { API_URL } from '../config';
 
 /* ── Local user type that mirrors what we need from Firebase User ── */
 export interface LocalUser {
@@ -34,7 +35,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-const API = 'http://localhost:3001';
+const API = API_URL;
 
 export function useAuth() {
   const ctx = useContext(AuthContext);

@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DB_PATH = join(__dirname, 'db.json');
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 function readDB() {
   try {
