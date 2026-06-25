@@ -43,8 +43,29 @@ export function useAuth() {
   return ctx;
 }
 
-/* ── In-memory token (no localStorage) ── */
-let _token: string | null = null;
+const STORAGE_KEY = 'taskmaster_session';
+
+interface StoredSession {
+  token: string;
+  user: LocalUser;
+}
+
+function loadSession(): StoredSession | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+
+function saveSession(token: string, user: LocalUser) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ token, user }));
+}
+
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+let _token: string | null = loadSession()?.token ?? null;
 
 export function getToken(): string | null {
   return _token;
@@ -74,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* On mount: Firebase listener or nothing (no session restore) */
+  /* On mount: Firebase listener or restore local session */
   useEffect(() => {
     if (isFirebaseConfigured && auth) {
       const unsub = onAuthStateChanged(auth, (u) => {
@@ -84,6 +105,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return unsub;
     }
 
+    const session = loadSession();
+    if (session) {
+      _token = session.token;
+      setUser(session.user);
+    }
     setLoading(false);
   }, []);
 
@@ -93,12 +119,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await signInWithEmailAndPassword(auth, email, password);
       return;
     }
-    const { token, user: u } = await apiFetch<{ token: string; user: LocalUser }>('/api/auth/signin', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    });
-    _token = token;
-    setUser(u);
+      const { token, user: u } = await apiFetch<{ token: string; user: LocalUser }>('/api/auth/signin', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+      _token = token;
+      saveSession(token, u);
+      setUser(u);
   }, []);
 
   /* ── Sign Up ── */
@@ -114,6 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ email, password, displayName }),
       });
       _token = token;
+      saveSession(token, u);
       setUser(u);
     } catch (err) {
       console.error('[signUp] caught error:', err);
@@ -140,6 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try { await apiFetch('/api/auth/signout', { method: 'POST', headers: { Authorization: `Bearer ${_token}` } }); } catch {}
     }
     _token = null;
+    clearSession();
     setUser(null);
   }, []);
 
