@@ -255,10 +255,10 @@ function Shell({
           </div>
         ) : (
           <main>
-            {activeTab === 'tasks' && <TodoList todos={todos} setTodos={setTodos} />}
-            {activeTab === 'planner' && <Planner events={events} setEvents={setEvents} />}
-            {activeTab === 'notes' && <Notes notes={notes} setNotes={setNotes} />}
-            {activeTab === 'pomodoro' && <Pomodoro />}
+            <div className={activeTab === 'tasks' ? '' : 'hidden'}><TodoList todos={todos} setTodos={setTodos} /></div>
+            <div className={activeTab === 'planner' ? '' : 'hidden'}><Planner events={events} setEvents={setEvents} /></div>
+            <div className={activeTab === 'notes' ? '' : 'hidden'}><Notes notes={notes} setNotes={setNotes} /></div>
+            <div className={activeTab === 'pomodoro' ? '' : 'hidden'}><Pomodoro /></div>
           </main>
         )}
 
