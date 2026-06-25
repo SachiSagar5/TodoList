@@ -1,6 +1,6 @@
 # TaskMaster - Modern Todo List App
 
-A full-featured productivity application built with React, TypeScript, and Tailwind CSS. Features task management, calendar planner, and notes — all with authentication and optional cloud sync.
+A full-featured productivity application built with React, TypeScript, and Tailwind CSS. Features task management with priorities & timers, calendar planner, notes, pomodoro timer, and dashboard — all with authentication, optional cloud sync, and native app builds.
 
 ![TaskMaster](https://img.shields.io/badge/TaskMaster-Productivity-indigo)
 ![React](https://img.shields.io/badge/React-19-blue)
@@ -11,17 +11,16 @@ A full-featured productivity application built with React, TypeScript, and Tailw
 ## ✨ Features
 
 ### 📋 Task Management
-- Create, complete, and delete tasks
-- **Due dates** with date picker
-- **Date-wise grouping** (Today, Tomorrow, Overdue, etc.)
-- **Hide completed tasks** toggle
+- Create, complete, and delete tasks with **priority levels** (high/medium/low)
+- **Due dates** with date picker and **date-wise grouping** (Today, Tomorrow, Overdue)
+- **Per-task countdown timers** (5 min to custom duration) with play/pause/reset
+- **Tags** — add comma-separated tags to tasks for categorization
+- Hide completed tasks toggle, clear completed, overdue warnings
 - Visual progress indicators per date group
-- Overdue task warnings
 
 ### 📅 Calendar Planner
 - Interactive monthly calendar view
-- Create events with title, description, time, and color
-- 8 color options for event categorization
+- Create events with title, description, time, and color (8 options)
 - Quick navigation (Today, Previous/Next month)
 - Upcoming events preview (7 days)
 - Click any date to view/add events
@@ -33,6 +32,32 @@ A full-featured productivity application built with React, TypeScript, and Tailw
 - Search notes by title or content
 - Grid layout with hover actions
 
+### ⏱️ Pomodoro Timer
+- Configurable work duration, short break, and long break
+- SVG ring countdown animation
+- Audio notification on completion
+- Session counter stored in localStorage
+- Timer state preserved across tab switches
+
+### 📊 Dashboard
+- KPI cards (total tasks, completed, active, overdue)
+- SVG completion rate ring chart
+- Active tasks by priority with horizontal bars
+- 7-day completion activity chart
+- Tag cloud with usage counts
+- Overview summary (events, notes, pomodoro sessions)
+
+### 🔍 Global Search
+- Press `⌘K` (or `Ctrl+K`) to open search modal
+- Searches across tasks (including tags), events, and notes
+- Results grouped by type with highlighted matches
+
+### 🌙 Dark Mode
+- Toggle via header button
+- Persists to localStorage
+- Respects system `prefers-color-scheme`
+- Full Tailwind `dark:` variant support across all components
+
 ### 🔐 Authentication
 - **Email/Password** sign in & sign up
 - **Google Sign-In** (with Firebase)
@@ -41,8 +66,9 @@ A full-featured productivity application built with React, TypeScript, and Tailw
 - User profile with stats
 
 ### ☁️ Data Storage
-- **Local Mode**: Works without any setup — data stored in browser localStorage
+- **Local Mode**: Works without any setup — data persisted via REST API server
 - **Cloud Mode**: With Firebase — real-time sync across devices via Firestore
+- **Export/Import** — download all data as JSON or upload to restore
 
 ---
 
@@ -65,7 +91,7 @@ A full-featured productivity application built with React, TypeScript, and Tailw
    npm install
    ```
 
-3. **Start the development server**
+3. **Start the development server** (local API mode)
    ```bash
    npm run dev
    ```
@@ -87,6 +113,70 @@ That's it! The app works immediately in **Local Mode** — no additional setup r
 | `npm run dev` | Start development server (http://localhost:5173) |
 | `npm run build` | Build for production (outputs to `dist/`) |
 | `npm run preview` | Preview production build locally |
+| `npm run build:mac` | Build macOS DMG (Intel) via Electron |
+| `npm run build:mac:arm` | Build macOS DMG (Apple Silicon) via Electron |
+| `npm run build:apk` | Build Android APK via Capacitor |
+
+---
+
+## 🖥️ Desktop Build (macOS DMG)
+
+Build the app as a native macOS application using Electron.
+
+### Prerequisites
+- macOS (builds are platform-specific)
+- [electron-builder](https://www.electron.build/) (included in devDependencies)
+
+### Build for Intel Macs
+```bash
+npm run build:mac
+```
+
+### Build for Apple Silicon (M1/M2/M3)
+```bash
+npm run build:mac:arm
+```
+
+The DMG file will be output to `electron-build/TaskMaster-<version>.dmg` and `dist_electron/`.
+
+---
+
+## 📱 Android Build (APK)
+
+Build the app as an Android APK using Capacitor.
+
+### Prerequisites
+- [Android Studio](https://developer.android.com/studio) with Android SDK
+- Java 17+
+- Gradle (bundled with Android Studio)
+
+### Build Steps
+
+1. **Build the web app**
+   ```bash
+   npm run build
+   ```
+
+2. **Sync with Capacitor**
+   ```bash
+   npx cap sync android
+   ```
+
+3. **Open in Android Studio**
+   ```bash
+   npx cap open android
+   ```
+
+4. **Generate APK** (in Android Studio)
+   - Go to **Build → Build Bundle(s) / APK(s) → Build APK(s)**
+   - Find the APK at `android/app/build/outputs/apk/debug/app-debug.apk`
+
+Alternatively, build directly from the command line:
+```bash
+cd android && ./gradlew assembleDebug
+```
+
+The APK will be at `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ---
 
@@ -137,26 +227,34 @@ The app will automatically detect Firebase and switch to **Cloud Mode**.
 ```
 ├── src/
 │   ├── components/
-│   │   ├── AuthPage.tsx      # Sign in/Sign up page
-│   │   ├── TodoList.tsx      # Task management component
-│   │   ├── Planner.tsx       # Calendar planner component
-│   │   └── Notes.tsx         # Notes component
+│   │   ├── AuthPage.tsx       # Sign in/Sign up page
+│   │   ├── TodoList.tsx       # Task management with priorities, timers, tags
+│   │   ├── Planner.tsx        # Calendar planner component
+│   │   ├── Notes.tsx          # Notes component
+│   │   ├── Pomodoro.tsx       # Pomodoro timer with SVG ring
+│   │   ├── Dashboard.tsx      # Stats dashboard with charts
+│   │   └── SearchModal.tsx    # Global search modal
 │   ├── contexts/
-│   │   └── AuthContext.tsx   # Authentication context (local + Firebase)
+│   │   ├── AuthContext.tsx    # Authentication context (local + Firebase)
+│   │   └── ThemeContext.tsx   # Dark mode context with localStorage
 │   ├── hooks/
 │   │   ├── useFirestore.ts   # Firestore real-time sync hook
+│   │   ├── useApiCollection.ts # Local REST API hook
 │   │   └── useLocalStorage.ts # localStorage hook
 │   ├── utils/
 │   │   ├── cn.ts             # Tailwind class merger
 │   │   └── dates.ts          # Date formatting utilities
-│   ├── App.tsx               # Main app component
+│   ├── App.tsx               # Main app with tab routing
 │   ├── firebase.ts           # Firebase configuration
 │   ├── types.ts              # TypeScript interfaces
 │   └── main.tsx              # Entry point
+├── electron/
+│   ├── main.cjs             # Electron main process
+│   └── preload.cjs          # Electron preload script
+├── android/                 # Android (Capacitor) project
+├── capacitor.config.ts      # Capacitor configuration
 ├── index.html
 ├── package.json
-├── tailwind.config.js
-├── tsconfig.json
 ├── vite.config.ts
 └── README.md
 ```
@@ -170,36 +268,9 @@ The app will automatically detect Firebase and switch to **Cloud Mode**.
 - **Icons**: Lucide React
 - **Build Tool**: Vite 7
 - **Authentication**: Firebase Auth (optional) + Local Auth fallback
-- **Database**: Firebase Firestore (optional) + localStorage fallback
-
----
-
-## 📱 Screenshots
-
-### Authentication
-- Clean sign in / sign up forms
-- Mode indicator (Local vs Cloud)
-- Google Sign-In support
-
-### Dashboard
-- Tab navigation (Tasks, Planner, Notes)
-- User profile with stats
-- Responsive design
-
-### Tasks
-- Date-grouped task lists
-- Completion toggle
-- Hide completed option
-
-### Planner
-- Monthly calendar grid
-- Color-coded events
-- Event creation modal
-
-### Notes
-- Grid of color-coded notes
-- Pin functionality
-- Search filter
+- **Database**: Firebase Firestore (optional) + REST API fallback
+- **Desktop**: Electron + electron-builder
+- **Mobile**: Capacitor (Android)
 
 ---
 
