@@ -28,7 +28,10 @@ export default function AuthPage() {
     setMode(m);
   };
 
-  const friendlyError = (code: string) => {
+  const friendlyError = (err: unknown): string => {
+    const e = err as Record<string, string | undefined>;
+    const code = e.code || e.error || '';
+    console.error('Auth error:', err);
     const map: Record<string, string> = {
       'auth/invalid-email': 'Please enter a valid email address.',
       'auth/user-disabled': 'This account has been disabled.',
@@ -41,8 +44,12 @@ export default function AuthPage() {
       'auth/invalid-credential': 'Invalid email or password. Please try again.',
       'auth/network-request-failed': 'Network error. Check your connection.',
       'auth/operation-not-supported-in-this-environment': 'Google sign-in requires Firebase configuration.',
+      'server/unreachable': 'Cannot connect to the server. Make sure to run `npm run server` in another terminal.',
+      'server/error': 'Server error. Check the console for details.',
+      'Missing fields': 'Please fill in all fields.',
+      'Invalid token': 'Session expired. Please sign out and try again.',
     };
-    return map[code] || 'Something went wrong. Please try again.';
+    return map[code] || map[e.error || ''] || `Error: ${code || 'unknown'}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,8 +72,7 @@ export default function AuthPage() {
         await signUp(email, password, displayName.trim());
       }
     } catch (err: unknown) {
-      const firebaseErr = err as { code?: string; message?: string };
-      setError(friendlyError(firebaseErr.code || ''));
+      setError(friendlyError(err));
     } finally {
       setLoading(false);
     }
@@ -78,9 +84,9 @@ export default function AuthPage() {
     try {
       await signInWithGoogle();
     } catch (err: unknown) {
-      const firebaseErr = err as { code?: string };
-      if (firebaseErr.code !== 'auth/popup-closed-by-user') {
-        setError(friendlyError(firebaseErr.code || ''));
+      const e = err as { code?: string };
+      if (e.code !== 'auth/popup-closed-by-user') {
+        setError(friendlyError(err));
       }
     } finally {
       setLoading(false);

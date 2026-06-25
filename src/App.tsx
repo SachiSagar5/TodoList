@@ -3,7 +3,7 @@ import { ListTodo, CalendarRange, StickyNote, Sparkles, LogOut, Loader2, Cloud, 
 import { cn } from './utils/cn';
 import { AuthProvider, useAuth, type AppUser } from './contexts/AuthContext';
 import { useFirestoreCollection } from './hooks/useFirestore';
-import { useLocalStorage } from './hooks/useLocalStorage';
+import { useApiCollection } from './hooks/useApiCollection';
 import TodoList from './components/TodoList';
 import Planner from './components/Planner';
 import Notes from './components/Notes';
@@ -35,21 +35,21 @@ function FirebaseDashboard({ user }: { user: AppUser }) {
   );
 }
 
-/* ───────── Dashboard with localStorage ───────── */
+/* ───────── Dashboard with local API server ───────── */
 function LocalDashboard({ user }: { user: AppUser }) {
   const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('tasks');
-  const uid = user.uid;
-  const [todos, setTodos] = useLocalStorage<Todo[]>(`taskmaster-todos-${uid}`, []);
-  const [events, setEvents] = useLocalStorage<PlannerEvent[]>(`taskmaster-events-${uid}`, []);
-  const [notes, setNotes] = useLocalStorage<Note[]>(`taskmaster-notes-${uid}`, []);
+  const [todos, setTodos, todosLoading] = useApiCollection<Todo>('todos');
+  const [events, setEvents, eventsLoading] = useApiCollection<PlannerEvent>('events');
+  const [notes, setNotes, notesLoading] = useApiCollection<Note>('notes');
+  const isLoading = todosLoading || eventsLoading || notesLoading;
 
   return (
     <Shell
       activeTab={activeTab} setActiveTab={setActiveTab}
       todos={todos} events={events} notes={notes}
       setTodos={setTodos} setEvents={setEvents} setNotes={setNotes}
-      isLoading={false} user={user} signOut={signOut} cloudSync={false}
+      isLoading={isLoading} user={user} signOut={signOut} cloudSync={false}
     />
   );
 }

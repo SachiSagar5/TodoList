@@ -1,0 +1,77 @@
+{
+  "users": [
+    {
+      "uid": "3f6077d8-7774-49c3-895b-cbbb10952a8d",
+      "email": "t@t.com",
+      "displayName": "Test",
+      "password": "pass123",
+      "createdAt": 1782360621619
+    },
+    {
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71",
+      "email": "test@gmail.com",
+      "displayName": "Test",
+      "password": "123456",
+      "createdAt": 1782360718462
+    }
+  ],
+  "sessions": [
+    {
+      "uid": "3f6077d8-7774-49c3-895b-cbbb10952a8d",
+      "token": "4108aaa8-13d7-4969-8548-46c7b6f39b1e"
+    },
+    {
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71",
+      "token": "0733ee3d-3188-4d47-99a6-6930ba84f5c3"
+    }
+  ],
+  "todos": [
+    {
+      "id": "t1",
+      "text": "Task 1",
+      "completed": false,
+      "createdAt": 1,
+      "dueDate": "",
+      "uid": "3f6077d8-7774-49c3-895b-cbbb10952a8d"
+    },
+    {
+      "id": "2ba74cec-b359-4b37-98ad-de4c906d9dfc",
+      "text": "test",
+      "completed": false,
+      "createdAt": 1782360731153,
+      "dueDate": "2026-06-25",
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
+    },
+    {
+      "id": "e8ef9753-c687-40a6-b72c-50bfaca66f50",
+      "text": "test",
+      "completed": false,
+      "createdAt": 1782360734519,
+      "dueDate": "2026-06-25",
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
+    }
+  ],
+  "events": [
+    {
+      "id": "e1",
+      "title": "Event 1",
+      "date": "2026-06-24",
+      "time": "10:00",
+      "color": "bg-blue-500",
+      "createdAt": 2,
+      "uid": "3f6077d8-7774-49c3-895b-cbbb10952a8d"
+    }
+  ],
+  "notes": [
+    {
+      "id": "n1",
+      "title": "Note 1",
+      "content": "Hello",
+      "color": "bg-white",
+      "pinned": false,
+      "createdAt": 3,
+      "updatedAt": 3,
+      "uid": "3f6077d8-7774-49c3-895b-cbbb10952a8d"
+    }
+  ]
+}

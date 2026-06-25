@@ -34,40 +34,38 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const API = 'http://localhost:3001';
+
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
 
-/* ── Local auth helpers ── */
-interface StoredUser {
-  uid: string;
-  email: string;
-  displayName: string;
-  password: string;
+/* ── In-memory token (no localStorage) ── */
+let _token: string | null = null;
+
+export function getToken(): string | null {
+  return _token;
 }
 
-function getLocalUsers(): StoredUser[] {
+async function apiFetch<T = unknown>(path: string, options?: RequestInit): Promise<T> {
+  let res: Response;
   try {
-    return JSON.parse(localStorage.getItem('taskmaster-users') || '[]');
-  } catch { return []; }
-}
-
-function saveLocalUsers(users: StoredUser[]) {
-  localStorage.setItem('taskmaster-users', JSON.stringify(users));
-}
-
-function getLocalSession(): LocalUser | null {
-  try {
-    const s = localStorage.getItem('taskmaster-session');
-    return s ? JSON.parse(s) : null;
-  } catch { return null; }
-}
-
-function setLocalSession(user: LocalUser | null) {
-  if (user) localStorage.setItem('taskmaster-session', JSON.stringify(user));
-  else localStorage.removeItem('taskmaster-session');
+    res = await fetch(`${API}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options?.headers,
+      },
+    });
+  } catch {
+    throw { code: 'server/unreachable' };
+  }
+  let body: T;
+  try { body = await res.json(); } catch { body = null as T; }
+  if (!res.ok) throw body || { code: 'server/error', error: `HTTP ${res.status}` };
+  return body;
 }
 
 /* ── Provider ── */
@@ -75,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  /* Firebase listener */
+  /* On mount: Firebase listener or nothing (no session restore) */
   useEffect(() => {
     if (isFirebaseConfigured && auth) {
       const unsub = onAuthStateChanged(auth, (u) => {
@@ -83,32 +81,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setLoading(false);
       });
       return unsub;
-    } else {
-      // Restore local session
-      const session = getLocalSession();
-      setUser(session);
-      setLoading(false);
     }
+
+    setLoading(false);
   }, []);
 
   /* ── Sign In ── */
   const signIn = useCallback(async (email: string, password: string) => {
     if (isFirebaseConfigured && auth) {
       await signInWithEmailAndPassword(auth, email, password);
-    } else {
-      const users = getLocalUsers();
-      const found = users.find(u => u.email.toLowerCase() === email.toLowerCase());
-      if (!found) throw { code: 'auth/user-not-found' };
-      if (found.password !== password) throw { code: 'auth/wrong-password' };
-      const localUser: LocalUser = {
-        uid: found.uid,
-        email: found.email,
-        displayName: found.displayName,
-        photoURL: null,
-      };
-      setLocalSession(localUser);
-      setUser(localUser);
+      return;
     }
+    const { token, user: u } = await apiFetch<{ token: string; user: LocalUser }>('/api/auth/signin', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    _token = token;
+    setUser(u);
   }, []);
 
   /* ── Sign Up ── */
@@ -116,27 +105,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (isFirebaseConfigured && auth) {
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName });
-    } else {
-      const users = getLocalUsers();
-      if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-        throw { code: 'auth/email-already-in-use' };
-      }
-      if (password.length < 6) throw { code: 'auth/weak-password' };
-      const newUser: StoredUser = {
-        uid: crypto.randomUUID(),
-        email,
-        displayName,
-        password,
-      };
-      saveLocalUsers([...users, newUser]);
-      const localUser: LocalUser = {
-        uid: newUser.uid,
-        email: newUser.email,
-        displayName: newUser.displayName,
-        photoURL: null,
-      };
-      setLocalSession(localUser);
-      setUser(localUser);
+      return;
+    }
+    try {
+      const { token, user: u } = await apiFetch<{ token: string; user: LocalUser }>('/api/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, displayName }),
+      });
+      _token = token;
+      setUser(u);
+    } catch (err) {
+      console.error('[signUp] caught error:', err);
+      throw err;
     }
   }, []);
 
@@ -153,23 +133,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     if (isFirebaseConfigured && auth) {
       await firebaseSignOut(auth);
-    } else {
-      setLocalSession(null);
-      setUser(null);
+      return;
     }
+    if (_token) {
+      try { await apiFetch('/api/auth/signout', { method: 'POST', headers: { Authorization: `Bearer ${_token}` } }); } catch {}
+    }
+    _token = null;
+    setUser(null);
   }, []);
 
   /* ── Reset Password ── */
   const resetPassword = useCallback(async (email: string) => {
     if (isFirebaseConfigured && auth) {
       await sendPasswordResetEmail(auth, email);
-    } else {
-      // Local mode: just check if user exists
-      const users = getLocalUsers();
-      if (!users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
-        throw { code: 'auth/user-not-found' };
-      }
-      // In local mode we can't actually send an email, but we simulate success
+      return;
+    }
+    try {
+      await apiFetch<unknown>('/api/auth/signin', {
+        method: 'POST',
+        body: JSON.stringify({ email, password: '__check__' }),
+      });
+    } catch (err: unknown) {
+      const e = err as { code?: string };
+      if (e.code === 'auth/user-not-found') throw { code: 'auth/user-not-found' };
     }
   }, []);
 
