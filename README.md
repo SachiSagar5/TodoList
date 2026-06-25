@@ -282,6 +282,8 @@ The app will automatically detect Firebase and switch to **Cloud Mode**.
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
+> **Note:** For any app changes, enhancements, or PRs — please reach out to the author first to discuss the scope and ensure alignment.
+
 ---
 
 ## 📄 License
