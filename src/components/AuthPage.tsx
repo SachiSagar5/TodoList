@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Mail, Lock, User, Eye, EyeOff, Sparkles, ArrowRight, AlertCircle, Shield, Cloud, HardDrive, Sun, Moon
+  Mail, Lock, User, Eye, EyeOff, Sparkles, ArrowRight, AlertCircle, Sun, Moon
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,7 +9,7 @@ import { useTheme } from '../contexts/ThemeContext';
 type AuthMode = 'signin' | 'signup' | 'reset';
 
 export default function AuthPage() {
-  const { signIn, signUp, signInWithGoogle, resetPassword, isFirebase } = useAuth();
+  const { signIn, signUp, resetPassword, isFirebase } = useAuth();
   const { dark, toggleTheme } = useTheme();
   const [mode, setMode] = useState<AuthMode>('signin');
   const [email, setEmail] = useState('');
@@ -75,21 +75,6 @@ export default function AuthPage() {
       }
     } catch (err: unknown) {
       setError(friendlyError(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogle = async () => {
-    setError('');
-    setLoading(true);
-    try {
-      await signInWithGoogle();
-    } catch (err: unknown) {
-      const e = err as { code?: string };
-      if (e.code !== 'auth/popup-closed-by-user') {
-        setError(friendlyError(err));
-      }
     } finally {
       setLoading(false);
     }

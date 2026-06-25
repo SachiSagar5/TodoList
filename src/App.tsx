@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ListTodo, CalendarRange, StickyNote, Timer, Sparkles, LogOut, Loader2, Cloud, HardDrive, Sun, Moon } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { ListTodo, CalendarRange, StickyNote, Timer, Sparkles, LogOut, Loader2, Sun, Moon, LayoutDashboard, Search, Download, Upload, Check } from 'lucide-react';
 import { cn } from './utils/cn';
 import { AuthProvider, useAuth, type AppUser } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
@@ -9,10 +9,13 @@ import TodoList from './components/TodoList';
 import Planner from './components/Planner';
 import Notes from './components/Notes';
 import Pomodoro from './components/Pomodoro';
+import Dashboard from './components/Dashboard';
+import SearchModal from './components/SearchModal';
 import AuthPage from './components/AuthPage';
-import type { Tab, Todo, PlannerEvent, Note } from './types';
+import type { Tab, Todo, PlannerEvent, Note, AppData } from './types';
 
 const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
+  { key: 'dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
   { key: 'tasks', label: 'Tasks', icon: <ListTodo className="w-5 h-5" /> },
   { key: 'planner', label: 'Planner', icon: <CalendarRange className="w-5 h-5" /> },
   { key: 'notes', label: 'Notes', icon: <StickyNote className="w-5 h-5" /> },
@@ -33,7 +36,7 @@ function FirebaseDashboard({ user }: { user: AppUser }) {
       activeTab={activeTab} setActiveTab={setActiveTab}
       todos={todos} events={events} notes={notes}
       setTodos={setTodos} setEvents={setEvents} setNotes={setNotes}
-      isLoading={isLoading} user={user} signOut={signOut} cloudSync
+      isLoading={isLoading} user={user} signOut={signOut}
     />
   );
 }
@@ -52,7 +55,7 @@ function LocalDashboard({ user }: { user: AppUser }) {
       activeTab={activeTab} setActiveTab={setActiveTab}
       todos={todos} events={events} notes={notes}
       setTodos={setTodos} setEvents={setEvents} setNotes={setNotes}
-      isLoading={isLoading} user={user} signOut={signOut} cloudSync={false}
+      isLoading={isLoading} user={user} signOut={signOut}
     />
   );
 }
@@ -70,17 +73,50 @@ interface ShellProps {
   isLoading: boolean;
   user: AppUser;
   signOut: () => Promise<void>;
-  cloudSync: boolean;
 }
 
 function Shell({
   activeTab, setActiveTab,
   todos, events, notes,
   setTodos, setEvents, setNotes,
-  isLoading, user, signOut, cloudSync,
+  isLoading, user, signOut,
 }: ShellProps) {
   const { dark, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  const exportData = useCallback(() => {
+    const data: AppData = { todos, events, notes };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `taskmaster-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [todos, events, notes]);
+
+  const importData = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string) as AppData;
+        if (data.todos) setTodos(data.todos);
+        if (data.events) setEvents(data.events);
+        if (data.notes) setNotes(data.notes);
+        setImportStatus('success');
+        setTimeout(() => setImportStatus('idle'), 2000);
+      } catch {
+        setImportStatus('error');
+        setTimeout(() => setImportStatus('idle'), 2000);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }, [setTodos, setEvents, setNotes]);
 
   const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
   const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -105,7 +141,37 @@ function Shell({
               </h1>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {/* Search */}
+              <button
+                onClick={() => setShowSearch(true)}
+                className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                title="Search (⌘K)"
+              >
+                <Search className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              </button>
+
+              {/* Export */}
+              <button
+                onClick={exportData}
+                className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                title="Export data"
+              >
+                <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+              </button>
+
+              {/* Import */}
+              <label className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all cursor-pointer" title="Import data">
+                {importStatus === 'success' ? (
+                  <Check className="w-4 h-4 text-emerald-500" />
+                ) : importStatus === 'error' ? (
+                  <span className="text-red-500 text-xs font-bold">!</span>
+                ) : (
+                  <Upload className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                )}
+                <input type="file" accept=".json" onChange={importData} className="hidden" />
+              </label>
+
               {/* Theme toggle */}
               <button
                 onClick={toggleTheme}
@@ -241,12 +307,16 @@ function Shell({
             <p className="text-slate-400 dark:text-slate-400 text-sm font-medium">Loading your data...</p>
           </div>
         ) : (
-          <main>
-            <div className={activeTab === 'tasks' ? '' : 'hidden'}><TodoList todos={todos} setTodos={setTodos} /></div>
-            <div className={activeTab === 'planner' ? '' : 'hidden'}><Planner events={events} setEvents={setEvents} /></div>
-            <div className={activeTab === 'notes' ? '' : 'hidden'}><Notes notes={notes} setNotes={setNotes} /></div>
-            <div className={activeTab === 'pomodoro' ? '' : 'hidden'}><Pomodoro /></div>
-          </main>
+          <>
+            <main>
+              <div className={activeTab === 'dashboard' ? '' : 'hidden'}><Dashboard todos={todos} events={events} notes={notes} /></div>
+              <div className={activeTab === 'tasks' ? '' : 'hidden'}><TodoList todos={todos} setTodos={setTodos} /></div>
+              <div className={activeTab === 'planner' ? '' : 'hidden'}><Planner events={events} setEvents={setEvents} /></div>
+              <div className={activeTab === 'notes' ? '' : 'hidden'}><Notes notes={notes} setNotes={setNotes} /></div>
+              <div className={activeTab === 'pomodoro' ? '' : 'hidden'}><Pomodoro /></div>
+            </main>
+            <SearchModal open={showSearch} onClose={() => setShowSearch(false)} todos={todos} events={events} notes={notes} />
+          </>
         )}
 
         <footer className="mt-14 text-center text-slate-300 dark:text-slate-600 text-xs">

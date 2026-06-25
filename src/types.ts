@@ -7,9 +7,16 @@ export interface Todo {
   createdAt: number;
   dueDate: string; // YYYY-MM-DD
   priority: Priority;
+  tags: string[];
   timerDuration: number | null; // total seconds, null if no timer
   timerStartedAt: number | null; // Date.now() when started, null if not running
   timerElapsed: number; // seconds already elapsed
+}
+
+export interface AppData {
+  todos: Todo[];
+  events: PlannerEvent[];
+  notes: Note[];
 }
 
 export interface PlannerEvent {
@@ -32,4 +39,4 @@ export interface Note {
   updatedAt: number;
 }
 
-export type Tab = 'tasks' | 'planner' | 'notes' | 'pomodoro';
+export type Tab = 'tasks' | 'planner' | 'notes' | 'pomodoro' | 'dashboard';

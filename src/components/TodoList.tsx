@@ -135,10 +135,13 @@ export default function TodoList({ todos, setTodos }: Props) {
   const [showTimerPicker, setShowTimerPicker] = useState(false);
   const [hideCompleted, setHideCompleted] = useState(false);
   const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
+  const [tagInput, setTagInput] = useState('');
 
   const addTodo = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
+
+    const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
 
     const newTodo: Todo = {
       id: crypto.randomUUID(),
@@ -147,6 +150,7 @@ export default function TodoList({ todos, setTodos }: Props) {
       createdAt: Date.now(),
       dueDate: dueDate || getToday(),
       priority,
+      tags,
       timerDuration: timerMinutes > 0 ? timerMinutes * 60 : null,
       timerStartedAt: null,
       timerElapsed: 0,
@@ -154,6 +158,7 @@ export default function TodoList({ todos, setTodos }: Props) {
 
     setTodos(prev => [newTodo, ...prev]);
     setInputValue('');
+    setTagInput('');
     setTimerMinutes(0);
     setShowTimerPicker(false);
   };
@@ -323,6 +328,24 @@ export default function TodoList({ todos, setTodos }: Props) {
               </div>
             )}
           </div>
+
+          {/* Tags */}
+          <div className="px-3 pb-3">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <input
+                type="text"
+                value={tagInput}
+                onChange={e => setTagInput(e.target.value)}
+                placeholder="Add tags (comma-separated)"
+                className="flex-1 min-w-[140px] px-2.5 py-1.5 text-xs bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:border-indigo-300 dark:focus:border-indigo-400 transition-all text-slate-900 dark:text-slate-200 placeholder:text-slate-400"
+              />
+              {tagInput.split(',').map(t => t.trim()).filter(Boolean).map((tag, i) => (
+                <span key={i} className="px-1.5 py-0.5 text-[10px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -463,6 +486,15 @@ export default function TodoList({ todos, setTodos }: Props) {
                                 >
                                   {todo.text}
                                 </span>
+                                {(todo.tags ?? []).length > 0 && (
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    {(todo.tags ?? []).map(tag => (
+                                      <span key={tag} className="px-1.5 py-0.5 text-[9px] font-bold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-md">
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                               <div className="flex items-center gap-3 mt-1">
                                 {hasTimer && !todo.completed && (
