@@ -1,9 +1,15 @@
+export type Priority = 'high' | 'medium' | 'low';
+
 export interface Todo {
   id: string;
   text: string;
   completed: boolean;
   createdAt: number;
   dueDate: string; // YYYY-MM-DD
+  priority: Priority;
+  timerDuration: number | null; // total seconds, null if no timer
+  timerStartedAt: number | null; // Date.now() when started, null if not running
+  timerElapsed: number; // seconds already elapsed
 }
 
 export interface PlannerEvent {
@@ -26,4 +32,4 @@ export interface Note {
   updatedAt: number;
 }
 
-export type Tab = 'tasks' | 'planner' | 'notes';
+export type Tab = 'tasks' | 'planner' | 'notes' | 'pomodoro';

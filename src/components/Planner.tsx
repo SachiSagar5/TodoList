@@ -131,31 +131,31 @@ export default function Planner({ events, setEvents }: Props) {
   return (
     <div className="space-y-6">
       {/* Calendar */}
-      <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 overflow-hidden">
+      <div className="bg-white dark:bg-slate-800/80 rounded-2xl shadow-lg shadow-slate-200/60 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 overflow-hidden">
         {/* Cal header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-700">
           <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold text-slate-800">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">
               {MONTHS[currentMonth]} {currentYear}
             </h2>
-            <button onClick={goToToday} className="text-xs font-semibold px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors">
+            <button onClick={goToToday} className="text-xs font-semibold px-2.5 py-1 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
               Today
             </button>
           </div>
           <div className="flex items-center gap-1">
-            <button onClick={prevMonth} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-              <ChevronLeft className="w-4 h-4 text-slate-600" />
+            <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+              <ChevronLeft className="w-4 h-4 text-slate-600 dark:text-slate-400" />
             </button>
-            <button onClick={nextMonth} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-              <ChevronRight className="w-4 h-4 text-slate-600" />
+            <button onClick={nextMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+              <ChevronRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
             </button>
           </div>
         </div>
 
         {/* Day headers */}
-        <div className="grid grid-cols-7 border-b border-slate-100">
+        <div className="grid grid-cols-7 border-b border-slate-100 dark:border-slate-700">
           {DAYS.map(d => (
-            <div key={d} className="py-2.5 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <div key={d} className="py-2.5 text-center text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               {d}
             </div>
           ))}
@@ -164,7 +164,7 @@ export default function Planner({ events, setEvents }: Props) {
         {/* Days grid */}
         <div className="grid grid-cols-7">
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`blank-${i}`} className="h-20 border-b border-r border-slate-50" />
+            <div key={`blank-${i}`} className="h-20 border-b border-r border-slate-50 dark:border-slate-800" />
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
@@ -179,9 +179,9 @@ export default function Planner({ events, setEvents }: Props) {
                 key={day}
                 onClick={() => setSelectedDate(ds)}
                 className={cn(
-                  "h-20 border-b border-r border-slate-50 p-1.5 text-left transition-all hover:bg-indigo-50/50 relative",
-                  isSelected && "bg-indigo-50 ring-2 ring-inset ring-indigo-300",
-                  isPast && !isSelected && "bg-slate-50/40"
+                  "h-20 border-b border-r border-slate-50 dark:border-slate-800 p-1.5 text-left transition-all hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 relative",
+                  isSelected && "bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-inset ring-indigo-300 dark:ring-indigo-500",
+                  isPast && !isSelected && "bg-slate-50/40 dark:bg-slate-800/20"
                 )}
               >
                 <span
@@ -190,8 +190,8 @@ export default function Planner({ events, setEvents }: Props) {
                     isToday
                       ? "bg-indigo-600 text-white"
                       : isPast
-                      ? "text-slate-400"
-                      : "text-slate-700"
+                      ? "text-slate-400 dark:text-slate-500"
+                      : "text-slate-700 dark:text-slate-300"
                   )}
                 >
                   {day}
@@ -202,7 +202,7 @@ export default function Planner({ events, setEvents }: Props) {
                       <div key={ev.id} className={cn("w-1.5 h-1.5 rounded-full", ev.color)} />
                     ))}
                     {dayEvents.length > 3 && (
-                      <span className="text-[9px] text-slate-400 font-medium">+{dayEvents.length - 3}</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">+{dayEvents.length - 3}</span>
                     )}
                   </div>
                 )}
@@ -214,9 +214,9 @@ export default function Planner({ events, setEvents }: Props) {
 
       {/* Selected date events */}
       {selectedDate && (
-        <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-5">
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl shadow-lg shadow-slate-200/60 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-slate-800">
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
               {new Date(selectedDate + 'T00:00:00').toLocaleDateString('en-US', {
                 weekday: 'long', month: 'long', day: 'numeric'
               })}
@@ -231,14 +231,14 @@ export default function Planner({ events, setEvents }: Props) {
 
           {/* Event form modal */}
           {showForm && (
-            <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <div className="mb-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl border border-slate-200 dark:border-slate-600">
               <form onSubmit={saveEvent} className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-slate-700">
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                     {editingId ? 'Edit Event' : 'New Event'}
                   </span>
-                  <button type="button" onClick={resetForm} className="p-1 hover:bg-slate-200 rounded-lg transition-colors">
-                    <X className="w-4 h-4 text-slate-500" />
+                  <button type="button" onClick={resetForm} className="p-1 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors">
+                    <X className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                   </button>
                 </div>
                 <input
@@ -246,7 +246,7 @@ export default function Planner({ events, setEvents }: Props) {
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder="Event title"
-                  className="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                  className="w-full px-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 text-slate-900 dark:text-slate-200"
                   autoFocus
                 />
                 <textarea
@@ -254,21 +254,21 @@ export default function Planner({ events, setEvents }: Props) {
                   onChange={e => setDescription(e.target.value)}
                   placeholder="Description (optional)"
                   rows={2}
-                  className="w-full px-4 py-2.5 text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 resize-none"
+                  className="w-full px-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 text-slate-900 dark:text-slate-200 resize-none"
                 />
                 <div className="flex items-center gap-3">
                   <div className="relative flex items-center">
-                    <Clock className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <Clock className="absolute left-3 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                     <input
                       type="time"
                       value={time}
                       onChange={e => setTime(e.target.value)}
-                      className="pl-9 pr-3 py-2 text-sm bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                      className="pl-9 pr-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 text-slate-900 dark:text-slate-200"
                     />
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-slate-500 mr-1">Color:</span>
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400 mr-1">Color:</span>
                   {EVENT_COLORS.map(c => (
                     <button
                       key={c.value}
@@ -332,7 +332,7 @@ export default function Planner({ events, setEvents }: Props) {
             </div>
           ) : (
             !showForm && (
-              <p className="text-sm text-slate-400 text-center py-6">
+              <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-6">
                 No events for this day. Click "Add Event" to create one.
               </p>
             )
@@ -342,14 +342,14 @@ export default function Planner({ events, setEvents }: Props) {
 
       {/* Upcoming */}
       {upcomingEvents.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 p-5">
-          <h3 className="text-base font-bold text-slate-800 mb-3">📅 Upcoming (7 days)</h3>
+        <div className="bg-white dark:bg-slate-800/80 rounded-2xl shadow-lg shadow-slate-200/60 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 p-5">
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-3">📅 Upcoming (7 days)</h3>
           <div className="space-y-2">
             {upcomingEvents.slice(0, 8).map(ev => (
               <div key={ev.id} className="flex items-center gap-3 text-sm">
                 <div className={cn("w-2 h-2 rounded-full flex-shrink-0", ev.color)} />
-                <span className="font-medium text-slate-700 truncate flex-1">{ev.title}</span>
-                <span className="text-xs text-slate-400 whitespace-nowrap">
+                <span className="font-medium text-slate-700 dark:text-slate-300 truncate flex-1">{ev.title}</span>
+                <span className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
                   {new Date(ev.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                   {' · '}
                   {formatTime(ev.time)}

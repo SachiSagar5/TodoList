@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { ListTodo, CalendarRange, StickyNote, Sparkles, LogOut, Loader2, Cloud, HardDrive } from 'lucide-react';
+import { ListTodo, CalendarRange, StickyNote, Timer, Sparkles, LogOut, Loader2, Cloud, HardDrive, Sun, Moon } from 'lucide-react';
 import { cn } from './utils/cn';
 import { AuthProvider, useAuth, type AppUser } from './contexts/AuthContext';
+import { useTheme } from './contexts/ThemeContext';
 import { useFirestoreCollection } from './hooks/useFirestore';
 import { useApiCollection } from './hooks/useApiCollection';
 import TodoList from './components/TodoList';
 import Planner from './components/Planner';
 import Notes from './components/Notes';
+import Pomodoro from './components/Pomodoro';
 import AuthPage from './components/AuthPage';
 import type { Tab, Todo, PlannerEvent, Note } from './types';
 
@@ -14,6 +16,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'tasks', label: 'Tasks', icon: <ListTodo className="w-5 h-5" /> },
   { key: 'planner', label: 'Planner', icon: <CalendarRange className="w-5 h-5" /> },
   { key: 'notes', label: 'Notes', icon: <StickyNote className="w-5 h-5" /> },
+  { key: 'pomodoro', label: 'Pomodoro', icon: <Timer className="w-5 h-5" /> },
 ];
 
 /* ───────── Dashboard with Firebase Firestore ───────── */
@@ -76,6 +79,7 @@ function Shell({
   setTodos, setEvents, setNotes,
   isLoading, user, signOut, cloudSync,
 }: ShellProps) {
+  const { dark, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const displayName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
@@ -87,115 +91,126 @@ function Shell({
   const todayEvents = events.filter(e => e.date === today).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 text-slate-900 font-sans selection:bg-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-800/40">
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-14">
         {/* Header */}
         <header className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="inline-flex items-center justify-center p-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-200/60">
+              <div className="inline-flex items-center justify-center p-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-200/60 dark:shadow-indigo-900/40">
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-600 dark:from-indigo-400 dark:via-violet-400 dark:to-purple-400 bg-clip-text text-transparent">
                 TaskMaster
               </h1>
             </div>
 
-            {/* Profile */}
-            <div className="relative">
+            <div className="flex items-center gap-2">
+              {/* Theme toggle */}
               <button
-                onClick={() => setShowProfileMenu(s => !s)}
-                className="flex items-center gap-2.5 pl-3 pr-1.5 py-1.5 bg-white border border-slate-200 rounded-full hover:shadow-md transition-all"
+                onClick={toggleTheme}
+                className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                <span className="text-sm font-medium text-slate-700 hidden sm:block max-w-[120px] truncate">
-                  {displayName}
-                </span>
-                {photoURL ? (
-                  <img src={photoURL} alt="" className="w-8 h-8 rounded-full object-cover" referrerPolicy="no-referrer" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
-                    {initials}
-                  </div>
-                )}
+                {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
               </button>
 
-              {showProfileMenu && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                  <div className="absolute right-0 top-12 z-50 w-72 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-                    <div className="p-4 border-b border-slate-100">
-                      <div className="flex items-center gap-3">
-                        {photoURL ? (
-                          <img src={photoURL} alt="" className="w-11 h-11 rounded-full object-cover" referrerPolicy="no-referrer" />
-                        ) : (
-                          <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-sm font-bold">
-                            {initials}
+              {/* Profile */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfileMenu(s => !s)}
+                  className="flex items-center gap-2.5 pl-3 pr-1.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                >
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300 hidden sm:block max-w-[120px] truncate">
+                    {displayName}
+                  </span>
+                  {photoURL ? (
+                    <img src={photoURL} alt="" className="w-8 h-8 rounded-full object-cover" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-xs font-bold">
+                      {initials}
+                    </div>
+                  )}
+                </button>
+
+                {showProfileMenu && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
+                    <div className="absolute right-0 top-12 z-50 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                      <div className="p-4 border-b border-slate-100 dark:border-slate-700">
+                        <div className="flex items-center gap-3">
+                          {photoURL ? (
+                            <img src={photoURL} alt="" className="w-11 h-11 rounded-full object-cover" referrerPolicy="no-referrer" />
+                          ) : (
+                            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white text-sm font-bold">
+                              {initials}
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">{displayName}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-400 truncate">{user.email}</p>
                           </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-sm font-bold text-slate-800 truncate">{displayName}</p>
-                          <p className="text-xs text-slate-400 truncate">{user.email}</p>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Sync badge */}
-                    <div className="px-4 pt-3 pb-1">
-                      <div className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold",
-                        cloudSync
-                          ? "bg-emerald-50 text-emerald-600 border border-emerald-200"
-                          : "bg-amber-50 text-amber-600 border border-amber-200"
-                      )}>
-                        {cloudSync ? <Cloud className="w-3 h-3" /> : <HardDrive className="w-3 h-3" />}
-                        {cloudSync ? 'Cloud sync enabled' : 'Local storage mode'}
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="p-4">
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="text-center p-2 bg-slate-50 rounded-xl">
-                          <p className="text-lg font-bold text-indigo-600">{todos.length}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Tasks</p>
-                        </div>
-                        <div className="text-center p-2 bg-slate-50 rounded-xl">
-                          <p className="text-lg font-bold text-violet-600">{events.length}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Events</p>
-                        </div>
-                        <div className="text-center p-2 bg-slate-50 rounded-xl">
-                          <p className="text-lg font-bold text-purple-600">{notes.length}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Notes</p>
+                      {/* Sync badge */}
+                      <div className="px-4 pt-3 pb-1">
+                        <div className={cn(
+                          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold",
+                          cloudSync
+                            ? "bg-emerald-50 text-emerald-600 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800"
+                            : "bg-amber-50 text-amber-600 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800"
+                        )}>
+                          {cloudSync ? <Cloud className="w-3 h-3" /> : <HardDrive className="w-3 h-3" />}
+                          {cloudSync ? 'Cloud sync enabled' : 'Local storage mode'}
                         </div>
                       </div>
-                    </div>
 
-                    <div className="p-2 border-t border-slate-100">
-                      <button
-                        onClick={async () => { setShowProfileMenu(false); await signOut(); }}
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        Sign Out
-                      </button>
+                      {/* Stats */}
+                      <div className="p-4">
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                            <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">{todos.length}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Tasks</p>
+                          </div>
+                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                            <p className="text-lg font-bold text-violet-600 dark:text-violet-400">{events.length}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Events</p>
+                          </div>
+                          <div className="text-center p-2 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                            <p className="text-lg font-bold text-purple-600 dark:text-purple-400">{notes.length}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-slate-400 font-medium">Notes</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="p-2 border-t border-slate-100 dark:border-slate-700">
+                        <button
+                          onClick={async () => { setShowProfileMenu(false); await signOut(); }}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          Sign Out
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Welcome line */}
           <div className="text-center">
-            <p className="text-slate-400 text-sm font-medium">
-              Welcome back, <span className="text-slate-600 font-semibold">{displayName.split(' ')[0]}</span> 👋
+            <p className="text-slate-400 dark:text-slate-400 text-sm font-medium">
+              Welcome back, <span className="text-slate-600 dark:text-slate-300 font-semibold">{displayName.split(' ')[0]}</span>
             </p>
           </div>
         </header>
 
         {/* Tabs */}
         <nav className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-1 bg-white p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 border border-slate-100">
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700">
             {TABS.map(tab => (
               <button
                 key={tab.key}
@@ -203,8 +218,8 @@ function Shell({
                 className={cn(
                   "relative flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all",
                   activeTab === tab.key
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
-                    : "text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/40"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"
                 )}
               >
                 {tab.icon}
@@ -212,19 +227,19 @@ function Shell({
                 {tab.key === 'tasks' && todoBadge > 0 && (
                   <span className={cn(
                     "inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold rounded-full px-1",
-                    activeTab === 'tasks' ? "bg-white/20 text-white" : "bg-indigo-100 text-indigo-600"
+                    activeTab === 'tasks' ? "bg-white/20 text-white" : "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300"
                   )}>{todoBadge}</span>
                 )}
                 {tab.key === 'planner' && todayEvents > 0 && (
                   <span className={cn(
                     "inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold rounded-full px-1",
-                    activeTab === 'planner' ? "bg-white/20 text-white" : "bg-violet-100 text-violet-600"
+                    activeTab === 'planner' ? "bg-white/20 text-white" : "bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-300"
                   )}>{todayEvents}</span>
                 )}
                 {tab.key === 'notes' && notes.length > 0 && (
                   <span className={cn(
                     "inline-flex items-center justify-center min-w-[18px] h-[18px] text-[10px] font-bold rounded-full px-1",
-                    activeTab === 'notes' ? "bg-white/20 text-white" : "bg-purple-100 text-purple-600"
+                    activeTab === 'notes' ? "bg-white/20 text-white" : "bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300"
                   )}>{notes.length}</span>
                 )}
               </button>
@@ -235,18 +250,19 @@ function Shell({
         {/* Content */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mb-3" />
-            <p className="text-slate-400 text-sm font-medium">Loading your data...</p>
+            <Loader2 className="w-8 h-8 text-indigo-500 dark:text-indigo-400 animate-spin mb-3" />
+            <p className="text-slate-400 dark:text-slate-400 text-sm font-medium">Loading your data...</p>
           </div>
         ) : (
           <main>
             {activeTab === 'tasks' && <TodoList todos={todos} setTodos={setTodos} />}
             {activeTab === 'planner' && <Planner events={events} setEvents={setEvents} />}
             {activeTab === 'notes' && <Notes notes={notes} setNotes={setNotes} />}
+            {activeTab === 'pomodoro' && <Pomodoro />}
           </main>
         )}
 
-        <footer className="mt-14 text-center text-slate-300 text-xs">
+        <footer className="mt-14 text-center text-slate-300 dark:text-slate-600 text-xs">
           <p>TaskMaster — Your personal productivity hub</p>
         </footer>
       </div>
@@ -268,14 +284,14 @@ function AppRouter() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center p-4 mb-4 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg shadow-indigo-200/60">
+          <div className="inline-flex items-center justify-center p-4 mb-4 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg shadow-indigo-200/60 dark:shadow-indigo-900/40">
             <Sparkles className="w-10 h-10 text-white" />
           </div>
           <div className="flex items-center justify-center gap-2 mt-4">
-            <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
-            <span className="text-slate-500 text-sm font-medium">Loading TaskMaster...</span>
+            <Loader2 className="w-5 h-5 text-indigo-500 dark:text-indigo-400 animate-spin" />
+            <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">Loading TaskMaster...</span>
           </div>
         </div>
       </div>
