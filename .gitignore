@@ -3,6 +3,17 @@ node_modules/
 
 # Build output
 dist/
+release/
+
+# Electron
+out/
+
+# Capacitor / Android
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+capacitor.config.json
 
 # Environment variables
 .env
