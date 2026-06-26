@@ -252,13 +252,24 @@ export default function TodoList({ todos, setTodos }: Props) {
       const dragged = prev.find(t => t.id === dragId);
       const target = prev.find(t => t.id === targetId);
       if (!dragged || !target) return prev;
-      const draggedOrder = dragged.sortOrder ?? 0;
-      const targetOrder = target.sortOrder ?? 0;
-      return prev.map(t =>
-        t.id === dragId ? { ...t, sortOrder: targetOrder } :
-        t.id === targetId ? { ...t, sortOrder: draggedOrder } :
-        t
-      );
+
+      // Build the current visual ordering (incomplete first, then by sortOrder)
+      const sorted = [...prev].sort((a, b) => {
+        if (a.completed !== b.completed) return Number(a.completed) - Number(b.completed);
+        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      });
+
+      const fromIdx = sorted.indexOf(dragged);
+      const toIdx = sorted.indexOf(target);
+
+      // Move dragged to target's position
+      const reordered = [...sorted];
+      reordered.splice(fromIdx, 1);
+      reordered.splice(toIdx, 0, dragged);
+
+      // Re-assign sequential sortOrder preserving the new order
+      const updated = new Map(reordered.map((t, i) => [t.id, i]));
+      return prev.map(t => ({ ...t, sortOrder: updated.get(t.id) ?? (t.sortOrder ?? 0) }));
     });
     setDragId(null);
     setDragOverId(null);

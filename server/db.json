@@ -57,7 +57,8 @@
       "timerDuration": null,
       "timerStartedAt": null,
       "timerElapsed": 0,
-      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71",
+      "sortOrder": 0
     },
     {
       "id": "3b80bf3e-52df-4364-9b75-175505f65c6f",
@@ -70,7 +71,8 @@
       "timerDuration": null,
       "timerStartedAt": null,
       "timerElapsed": 0,
-      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71",
+      "sortOrder": 0
     },
     {
       "id": "b8d3e18e-8e6d-4603-9480-7c63c4e1d7f0",
@@ -83,7 +85,8 @@
       "timerDuration": null,
       "timerStartedAt": null,
       "timerElapsed": 0,
-      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71",
+      "sortOrder": 0
     },
     {
       "id": "84dfae9e-5e70-419f-92e5-e6459843f959",
@@ -109,7 +112,8 @@
       "timerDuration": null,
       "timerStartedAt": null,
       "timerElapsed": 0,
-      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71",
+      "sortOrder": 1
     },
     {
       "id": "d4bc892a-3927-41b8-a5af-c21de4017a61",
@@ -122,7 +126,8 @@
       "timerDuration": null,
       "timerStartedAt": null,
       "timerElapsed": 0,
-      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
+      "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71",
+      "sortOrder": 0
     },
     {
       "id": "d2064934-b519-4db7-aede-baefa810c338",
@@ -135,7 +140,7 @@
       "timerDuration": null,
       "timerStartedAt": null,
       "timerElapsed": 0,
-      "sortOrder": 1,
+      "sortOrder": 0,
       "uid": "d06dc440-9080-4ed8-ae62-b6a4c54dab71"
     }
   ],
