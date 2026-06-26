@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Plus, Trash2, CheckCircle2, Circle, ClipboardList,
   Eye, EyeOff, ChevronDown, ChevronRight, CalendarDays, AlertTriangle,
-  Timer, Play, Pause, RotateCcw
+  Timer, Play, Pause, RotateCcw, Edit3, X, GripVertical
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { getToday, formatDateLabel, isOverdue } from '../utils/dates';
@@ -136,6 +136,27 @@ export default function TodoList({ todos, setTodos }: Props) {
   const [hideCompleted, setHideCompleted] = useState(false);
   const [collapsedDates, setCollapsedDates] = useState<Set<string>>(new Set());
   const [tagInput, setTagInput] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const openEdit = (todo: Todo) => {
+    setInputValue(todo.text);
+    setDueDate(todo.dueDate);
+    setPriority(todo.priority);
+    setTimerMinutes(todo.timerDuration !== null ? todo.timerDuration / 60 : 0);
+    setTagInput((todo.tags ?? []).join(', '));
+    setEditingId(todo.id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setInputValue('');
+    setTagInput('');
+    setTimerMinutes(0);
+    setShowTimerPicker(false);
+    setDueDate(getToday());
+    setPriority('medium');
+  };
 
   const addTodo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,24 +164,45 @@ export default function TodoList({ todos, setTodos }: Props) {
 
     const tags = tagInput.split(',').map(t => t.trim()).filter(Boolean);
 
-    const newTodo: Todo = {
-      id: crypto.randomUUID(),
-      text: inputValue.trim(),
-      completed: false,
-      createdAt: Date.now(),
-      dueDate: dueDate || getToday(),
-      priority,
-      tags,
-      timerDuration: timerMinutes > 0 ? timerMinutes * 60 : null,
-      timerStartedAt: null,
-      timerElapsed: 0,
-    };
+    if (editingId) {
+      setTodos(prev =>
+        prev.map(t =>
+          t.id === editingId
+            ? {
+                ...t,
+                text: inputValue.trim(),
+                dueDate: dueDate || getToday(),
+                priority,
+                tags,
+                timerDuration: timerMinutes > 0 ? timerMinutes * 60 : null,
+              }
+            : t
+        )
+      );
+      cancelEdit();
+    } else {
+      const maxSortOrder = todos.reduce((max, t) => Math.max(max, t.sortOrder ?? 0), 0);
 
-    setTodos(prev => [newTodo, ...prev]);
-    setInputValue('');
-    setTagInput('');
-    setTimerMinutes(0);
-    setShowTimerPicker(false);
+      const newTodo: Todo = {
+        id: crypto.randomUUID(),
+        text: inputValue.trim(),
+        completed: false,
+        createdAt: Date.now(),
+        dueDate: dueDate || getToday(),
+        priority,
+        tags,
+        timerDuration: timerMinutes > 0 ? timerMinutes * 60 : null,
+        timerStartedAt: null,
+        timerElapsed: 0,
+        sortOrder: maxSortOrder + 1,
+      };
+
+      setTodos(prev => [newTodo, ...prev]);
+      setInputValue('');
+      setTagInput('');
+      setTimerMinutes(0);
+      setShowTimerPicker(false);
+    }
   };
 
   const toggleTodo = (id: string) => {
@@ -186,6 +228,47 @@ export default function TodoList({ todos, setTodos }: Props) {
     });
   };
 
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  const handleDragStart = (id: string) => {
+    setDragId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent, id: string) => {
+    e.preventDefault();
+    if (id !== dragId) {
+      setDragOverId(id);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverId(null);
+  };
+
+  const handleDrop = (targetId: string) => {
+    if (!dragId || dragId === targetId) return;
+    setTodos(prev => {
+      const dragged = prev.find(t => t.id === dragId);
+      const target = prev.find(t => t.id === targetId);
+      if (!dragged || !target) return prev;
+      const draggedOrder = dragged.sortOrder ?? 0;
+      const targetOrder = target.sortOrder ?? 0;
+      return prev.map(t =>
+        t.id === dragId ? { ...t, sortOrder: targetOrder } :
+        t.id === targetId ? { ...t, sortOrder: draggedOrder } :
+        t
+      );
+    });
+    setDragId(null);
+    setDragOverId(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragId(null);
+    setDragOverId(null);
+  };
+
   // filter & group
   const visible = hideCompleted ? todos.filter(t => !t.completed) : todos;
 
@@ -203,8 +286,7 @@ export default function TodoList({ todos, setTodos }: Props) {
     return a.localeCompare(b);
   });
 
-  const priorityOrder: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
-  const sortByPriority = (a: Todo, b: Todo) => priorityOrder[a.priority] - priorityOrder[b.priority];
+  const sortByOrder = (a: Todo, b: Todo) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
 
   const activeCount = todos.filter(t => !t.completed).length;
   const completedCount = todos.filter(t => t.completed).length;
@@ -215,7 +297,26 @@ export default function TodoList({ todos, setTodos }: Props) {
   return (
     <div className="space-y-6">
       {/* Input */}
-      <div className="bg-white dark:bg-slate-800/80 rounded-2xl shadow-lg shadow-slate-200/60 dark:shadow-slate-900/50 p-2 border border-slate-100 dark:border-slate-700">
+      <div className={cn(
+        "bg-white dark:bg-slate-800/80 rounded-2xl shadow-lg shadow-slate-200/60 dark:shadow-slate-900/50 p-2 border transition-all",
+        editingId
+          ? "border-indigo-300 dark:border-indigo-600 ring-2 ring-indigo-100 dark:ring-indigo-900/30"
+          : "border-slate-100 dark:border-slate-700"
+      )}>
+        {editingId && (
+          <div className="flex items-center justify-between px-4 pt-2 pb-1">
+            <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+              Editing Task
+            </span>
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" /> Cancel
+            </button>
+          </div>
+        )}
         <form onSubmit={addTodo} className="flex flex-col sm:flex-row gap-2">
           <div className="flex flex-1 items-center">
             <input
@@ -241,7 +342,7 @@ export default function TodoList({ todos, setTodos }: Props) {
               disabled={!inputValue.trim()}
               className="inline-flex items-center justify-center p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all active:scale-95 disabled:opacity-40 disabled:pointer-events-none shadow-md shadow-indigo-200"
             >
-              <Plus className="w-5 h-5" />
+              {editingId ? <Edit3 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
             </button>
           </div>
         </form>
@@ -436,10 +537,9 @@ export default function TodoList({ todos, setTodos }: Props) {
                 {!collapsed && (
                   <div className="space-y-2 ml-1">
                     {items
-                      .sort((a, b) => Number(a.completed) - Number(b.completed))
                       .sort((a, b) => {
                         if (a.completed !== b.completed) return Number(a.completed) - Number(b.completed);
-                        return sortByPriority(a, b);
+                        return sortByOrder(a, b);
                       })
                       .map(todo => {
                         const pr = getPriorityStyle(todo.priority);
@@ -448,15 +548,29 @@ export default function TodoList({ todos, setTodos }: Props) {
                         return (
                           <div
                             key={todo.id}
+                            draggable={!todo.completed}
+                            onDragStart={() => handleDragStart(todo.id)}
+                            onDragOver={e => handleDragOver(e, todo.id)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={() => handleDrop(todo.id)}
+                            onDragEnd={handleDragEnd}
                             className={cn(
                               "group flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-slate-800/80 rounded-2xl border transition-all hover:shadow-md dark:hover:shadow-slate-900/50",
                               todo.completed
                                 ? "bg-slate-50/60 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700"
                                 : overdue && !isToday
                                 ? "border-red-100 dark:border-red-900/50 hover:border-red-200 dark:hover:border-red-700"
-                                : "border-slate-100 dark:border-slate-700 hover:border-indigo-100 dark:hover:border-indigo-800"
+                                : "border-slate-100 dark:border-slate-700 hover:border-indigo-100 dark:hover:border-indigo-800",
+                              dragId === todo.id && "opacity-50",
+                              dragOverId === todo.id && "border-indigo-400 dark:border-indigo-400 ring-2 ring-indigo-200 dark:ring-indigo-700"
                             )}
                           >
+                            <div
+                              className="flex-shrink-0 cursor-grab active:cursor-grabbing text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 transition-colors"
+                              onMouseDown={e => e.stopPropagation()}
+                            >
+                              <GripVertical className="w-4 h-4" />
+                            </div>
                             <button
                               onClick={() => toggleTodo(todo.id)}
                               className={cn(
@@ -509,12 +623,20 @@ export default function TodoList({ todos, setTodos }: Props) {
                               </div>
                             </div>
 
-                            <button
-                              onClick={() => deleteTodo(todo.id)}
-                              className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all outline-none"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex items-center gap-1 opacity-60 sm:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all">
+                              <button
+                                onClick={() => openEdit(todo)}
+                                className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all outline-none"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => deleteTodo(todo.id)}
+                                className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all outline-none"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         );
                       })}

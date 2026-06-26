@@ -7,9 +7,10 @@ const API = API_URL;
 export function useApiCollection<T extends { id: string }>(
   collectionName: string
 ): [T[], React.Dispatch<React.SetStateAction<T[]>>, boolean] {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const syncToServer = useCallback(async (prev: T[], next: T[]) => {
     const token = getToken();
@@ -25,6 +26,7 @@ export function useApiCollection<T extends { id: string }>(
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
             body: JSON.stringify(item),
           });
+          if (res.status === 401) { await signOut(); return; }
           if (!res.ok) console.error(`POST ${collectionName} failed:`, await res.text());
         }
       }
@@ -36,13 +38,14 @@ export function useApiCollection<T extends { id: string }>(
             method: 'DELETE',
             headers: { Authorization: `Bearer ${token}` },
           });
+          if (res.status === 401) { await signOut(); return; }
           if (!res.ok) console.error(`DELETE ${collectionName} failed:`, await res.text());
         }
       }
     } catch (err) {
       console.error(`Sync ${collectionName} error:`, err);
     }
-  }, [user, collectionName]);
+  }, [user, collectionName, signOut]);
 
   const prevRef = useRef<T[]>([]);
 
@@ -57,12 +60,14 @@ export function useApiCollection<T extends { id: string }>(
   useEffect(() => {
     if (!user) {
       setData([]);
+      setFetchError(null);
       setLoading(false);
       return;
     }
     const token = getToken();
     if (!token) {
       setData([]);
+      setFetchError(null);
       setLoading(false);
       return;
     }
@@ -71,9 +76,31 @@ export function useApiCollection<T extends { id: string }>(
     fetch(`${API}/api/data/${collectionName}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => { if (!res.ok) throw new Error(res.statusText); return res.json(); })
-      .then(items => { if (!cancelled) { setData(items); prevRef.current = items; setLoading(false); } })
-      .catch(err => { console.error(`Error fetching ${collectionName}:`, err); if (!cancelled) setLoading(false); });
+      .then(async res => {
+        if (res.status === 401) {
+          setFetchError('Session expired. Try signing out and back in.');
+          return null;
+        }
+        if (!res.ok) throw new Error(res.statusText);
+        setFetchError(null);
+        return res.json();
+      })
+      .then(items => {
+        if (!cancelled) {
+          if (items) {
+            setData(items);
+            prevRef.current = items;
+          }
+          setLoading(false);
+        }
+      })
+      .catch(err => {
+        if (!cancelled) {
+          console.error(`Error fetching ${collectionName}:`, err);
+          setFetchError('Could not reach server. Make sure the API server is running.');
+          setLoading(false);
+        }
+      });
     return () => { cancelled = true; };
   }, [user, collectionName]);
 
@@ -87,5 +114,5 @@ export function useApiCollection<T extends { id: string }>(
     []
   );
 
-  return [data, setDataWithSync, loading];
+  return [data, setDataWithSync, loading, fetchError];
 }

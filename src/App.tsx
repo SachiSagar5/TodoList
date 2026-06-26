@@ -45,17 +45,18 @@ function FirebaseDashboard({ user }: { user: AppUser }) {
 function LocalDashboard({ user }: { user: AppUser }) {
   const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('tasks');
-  const [todos, setTodos, todosLoading] = useApiCollection<Todo>('todos');
-  const [events, setEvents, eventsLoading] = useApiCollection<PlannerEvent>('events');
-  const [notes, setNotes, notesLoading] = useApiCollection<Note>('notes');
+  const [todos, setTodos, todosLoading, todosError] = useApiCollection<Todo>('todos');
+  const [events, setEvents, eventsLoading, eventsError] = useApiCollection<PlannerEvent>('events');
+  const [notes, setNotes, notesLoading, notesError] = useApiCollection<Note>('notes');
   const isLoading = todosLoading || eventsLoading || notesLoading;
+  const fetchError = todosError || eventsError || notesError;
 
   return (
     <Shell
       activeTab={activeTab} setActiveTab={setActiveTab}
       todos={todos} events={events} notes={notes}
       setTodos={setTodos} setEvents={setEvents} setNotes={setNotes}
-      isLoading={isLoading} user={user} signOut={signOut}
+      isLoading={isLoading} fetchError={fetchError} user={user} signOut={signOut}
     />
   );
 }
@@ -71,6 +72,7 @@ interface ShellProps {
   setEvents: React.Dispatch<React.SetStateAction<PlannerEvent[]>>;
   setNotes: React.Dispatch<React.SetStateAction<Note[]>>;
   isLoading: boolean;
+  fetchError?: string | null;
   user: AppUser;
   signOut: () => Promise<void>;
 }
@@ -79,7 +81,7 @@ function Shell({
   activeTab, setActiveTab,
   todos, events, notes,
   setTodos, setEvents, setNotes,
-  isLoading, user, signOut,
+  isLoading, fetchError, user, signOut,
 }: ShellProps) {
   const { dark, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -141,11 +143,11 @@ function Shell({
               </h1>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 flex-shrink-0 max-w-[60vw] sm:max-w-none overflow-x-auto scrollbar-none">
               {/* Search */}
               <button
                 onClick={() => setShowSearch(true)}
-                className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
                 title="Search (⌘K)"
               >
                 <Search className="w-4 h-4 text-slate-500 dark:text-slate-400" />
@@ -154,14 +156,14 @@ function Shell({
               {/* Export */}
               <button
                 onClick={exportData}
-                className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
                 title="Export data"
               >
                 <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               </button>
 
               {/* Import */}
-              <label className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all cursor-pointer" title="Import data">
+              <label className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all cursor-pointer" title="Import data">
                 {importStatus === 'success' ? (
                   <Check className="w-4 h-4 text-emerald-500" />
                 ) : importStatus === 'error' ? (
@@ -175,14 +177,14 @@ function Shell({
               {/* Theme toggle */}
               <button
                 onClick={toggleTheme}
-                className="p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
                 title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
               >
                 {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
               </button>
 
               {/* Profile */}
-              <div className="relative">
+              <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setShowProfileMenu(s => !s)}
                   className="flex items-center gap-2.5 pl-3 pr-1.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
@@ -259,11 +261,17 @@ function Shell({
               Welcome back, <span className="text-slate-600 dark:text-slate-300 font-semibold">{displayName.split(' ')[0]}</span>
             </p>
           </div>
+
+          {fetchError && (
+            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-300 text-center font-medium">
+              {fetchError}
+            </div>
+          )}
         </header>
 
         {/* Tabs */}
-        <nav className="flex items-center justify-center mb-8">
-          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700">
+        <nav className="flex items-center justify-center mb-8 overflow-x-auto scrollbar-none px-2 -mx-2">
+          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 flex-shrink-0">
             {TABS.map(tab => (
               <button
                 key={tab.key}

@@ -164,7 +164,7 @@ export default function Planner({ events, setEvents }: Props) {
         {/* Days grid */}
         <div className="grid grid-cols-7">
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`blank-${i}`} className="h-20 border-b border-r border-slate-50 dark:border-slate-800" />
+            <div key={`blank-${i}`} className="h-16 sm:h-20 border-b border-r border-slate-50 dark:border-slate-800" />
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
@@ -179,7 +179,7 @@ export default function Planner({ events, setEvents }: Props) {
                 key={day}
                 onClick={() => setSelectedDate(ds)}
                 className={cn(
-                  "h-20 border-b border-r border-slate-50 dark:border-slate-800 p-1.5 text-left transition-all hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 relative",
+                  "h-16 sm:h-20 border-b border-r border-slate-50 dark:border-slate-800 p-1.5 text-left transition-all hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 relative",
                   isSelected && "bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-inset ring-indigo-300 dark:ring-indigo-500",
                   isPast && !isSelected && "bg-slate-50/40 dark:bg-slate-800/20"
                 )}

@@ -11,6 +11,7 @@ export interface Todo {
   timerDuration: number | null; // total seconds, null if no timer
   timerStartedAt: number | null; // Date.now() when started, null if not running
   timerElapsed: number; // seconds already elapsed
+  sortOrder: number; // for drag-and-drop reordering
 }
 
 export interface AppData {
