@@ -132,7 +132,7 @@ function Shell({
   const todayEvents = events.filter(e => e.date === today).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-800/40 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50/30 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-800/40 overflow-x-hidden">
       <div className="max-w-3xl mx-auto px-4 py-6 md:py-14">
         {/* Header */}
         <header className="mb-8">
