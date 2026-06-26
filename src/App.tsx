@@ -5,6 +5,7 @@ import { AuthProvider, useAuth, type AppUser } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
 import { useFirestoreCollection } from './hooks/useFirestore';
 import { useApiCollection } from './hooks/useApiCollection';
+import { useNotifications } from './hooks/useNotifications';
 import TodoList from './components/TodoList';
 import Planner from './components/Planner';
 import Notes from './components/Notes';
@@ -87,6 +88,8 @@ function Shell({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  useNotifications(events);
 
   const exportData = useCallback(() => {
     const data: AppData = { todos, events, notes };
