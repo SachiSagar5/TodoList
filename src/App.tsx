@@ -129,61 +129,63 @@ function Shell({
   const todayEvents = events.filter(e => e.date === today).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-800/40">
-      <div className="max-w-3xl mx-auto px-4 py-8 md:py-14">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 text-slate-900 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 dark:text-slate-100 font-sans selection:bg-indigo-100 dark:selection:bg-indigo-800/40 overflow-x-hidden">
+      <div className="max-w-3xl mx-auto px-4 py-6 md:py-14">
         {/* Header */}
         <header className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="inline-flex items-center justify-center p-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-200/60 dark:shadow-indigo-900/40">
-                <Sparkles className="w-6 h-6 text-white" />
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="inline-flex items-center justify-center p-1.5 sm:p-2.5 bg-gradient-to-br from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-200/60 dark:shadow-indigo-900/40 flex-shrink-0">
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-600 dark:from-indigo-400 dark:via-violet-400 dark:to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-lg sm:text-2xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-600 dark:from-indigo-400 dark:via-violet-400 dark:to-purple-400 bg-clip-text text-transparent whitespace-nowrap">
                 TaskMaster
               </h1>
             </div>
 
-            <div className="flex items-center gap-1.5 flex-shrink-0 max-w-[60vw] sm:max-w-none overflow-x-auto scrollbar-none">
-              {/* Search */}
-              <button
-                onClick={() => setShowSearch(true)}
-                className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
-                title="Search (⌘K)"
-              >
-                <Search className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              </button>
+            <div className="flex items-center gap-1.5 flex-shrink-0 min-w-0">
+              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                {/* Search */}
+                <button
+                  onClick={() => setShowSearch(true)}
+                  className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                  title="Search (⌘K)"
+                >
+                  <Search className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                </button>
 
-              {/* Export */}
-              <button
-                onClick={exportData}
-                className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
-                title="Export data"
-              >
-                <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              </button>
+                {/* Export */}
+                <button
+                  onClick={exportData}
+                  className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                  title="Export data"
+                >
+                  <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                </button>
 
-              {/* Import */}
-              <label className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all cursor-pointer" title="Import data">
-                {importStatus === 'success' ? (
-                  <Check className="w-4 h-4 text-emerald-500" />
-                ) : importStatus === 'error' ? (
-                  <span className="text-red-500 text-xs font-bold">!</span>
-                ) : (
-                  <Upload className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                )}
-                <input type="file" accept=".json" onChange={importData} className="hidden" />
-              </label>
+                {/* Import */}
+                <label className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all cursor-pointer" title="Import data">
+                  {importStatus === 'success' ? (
+                    <Check className="w-4 h-4 text-emerald-500" />
+                  ) : importStatus === 'error' ? (
+                    <span className="text-red-500 text-xs font-bold">!</span>
+                  ) : (
+                    <Upload className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  )}
+                  <input type="file" accept=".json" onChange={importData} className="hidden" />
+                </label>
 
-              {/* Theme toggle */}
-              <button
-                onClick={toggleTheme}
-                className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
-                title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
-              </button>
+                {/* Theme toggle */}
+                <button
+                  onClick={toggleTheme}
+                  className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                  title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                >
+                  {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
+                </button>
+              </div>
 
-              {/* Profile */}
+              {/* Profile — outside overflow container */}
               <div className="relative flex-shrink-0">
                 <button
                   onClick={() => setShowProfileMenu(s => !s)}
@@ -204,7 +206,7 @@ function Shell({
                 {showProfileMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                    <div className="absolute right-0 top-12 z-50 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div className="absolute right-0 top-12 z-50 w-64 sm:w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
                       <div className="p-4 border-b border-slate-100 dark:border-slate-700">
                         <div className="flex items-center gap-3">
                           {photoURL ? (
