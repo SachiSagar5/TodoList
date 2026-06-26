@@ -279,13 +279,14 @@ export default function Notes({ notes, setNotes }: Props) {
             <Pin className="w-3.5 h-3.5" /> Pinned
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {pinned.map(note => {
+            {pinned.map((note, i) => {
               const colors = getNoteColors(note.color);
               return (
                 <div
                   key={note.id}
+                  style={{ animationDelay: `${i * 50}ms` }}
                   className={cn(
-                    "group rounded-2xl border overflow-hidden transition-all hover:shadow-lg cursor-pointer",
+                    "group rounded-2xl border overflow-hidden transition-all hover:shadow-lg cursor-pointer animate-slide-up",
                     colors.bg, colors.border
                   )}
                   onClick={() => openEdit(note)}
@@ -329,13 +330,14 @@ export default function Notes({ notes, setNotes }: Props) {
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Others</h3>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {unpinned.map(note => {
+            {unpinned.map((note, i) => {
               const colors = getNoteColors(note.color);
               return (
                 <div
                   key={note.id}
+                  style={{ animationDelay: `${(i + pinned.length) * 50}ms` }}
                   className={cn(
-                    "group rounded-2xl border overflow-hidden transition-all hover:shadow-lg cursor-pointer",
+                    "group rounded-2xl border overflow-hidden transition-all hover:shadow-lg cursor-pointer animate-slide-up",
                     colors.bg, colors.border
                   )}
                   onClick={() => openEdit(note)}

@@ -205,8 +205,8 @@ function Shell({
 
                 {showProfileMenu && (
                   <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                    <div className="absolute right-0 top-12 z-50 w-64 sm:w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div className="fixed inset-0 z-40 animate-fade-in" onClick={() => setShowProfileMenu(false)} />
+                    <div className="absolute right-0 top-12 z-50 w-64 sm:w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-100 dark:border-slate-700 overflow-hidden animate-scale-in">
                       <div className="p-4 border-b border-slate-100 dark:border-slate-700">
                         <div className="flex items-center gap-3">
                           {photoURL ? (
@@ -265,7 +265,7 @@ function Shell({
           </div>
 
           {fetchError && (
-            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-300 text-center font-medium">
+            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl text-sm text-amber-700 dark:text-amber-300 text-center font-medium animate-slide-down">
               {fetchError}
             </div>
           )}
@@ -319,11 +319,11 @@ function Shell({
         ) : (
           <>
             <main>
-              <div className={activeTab === 'dashboard' ? '' : 'hidden'}><Dashboard todos={todos} events={events} notes={notes} /></div>
-              <div className={activeTab === 'tasks' ? '' : 'hidden'}><TodoList todos={todos} setTodos={setTodos} /></div>
-              <div className={activeTab === 'planner' ? '' : 'hidden'}><Planner events={events} setEvents={setEvents} /></div>
-              <div className={activeTab === 'notes' ? '' : 'hidden'}><Notes notes={notes} setNotes={setNotes} /></div>
-              <div className={activeTab === 'pomodoro' ? '' : 'hidden'}><Pomodoro /></div>
+              {activeTab === 'dashboard' && <div key="dashboard" className="animate-slide-up"><Dashboard todos={todos} events={events} notes={notes} /></div>}
+              {activeTab === 'tasks' && <div key="tasks" className="animate-slide-up"><TodoList todos={todos} setTodos={setTodos} /></div>}
+              {activeTab === 'planner' && <div key="planner" className="animate-slide-up"><Planner events={events} setEvents={setEvents} /></div>}
+              {activeTab === 'notes' && <div key="notes" className="animate-slide-up"><Notes notes={notes} setNotes={setNotes} /></div>}
+              {activeTab === 'pomodoro' && <div key="pomodoro" className="animate-slide-up"><Pomodoro /></div>}
             </main>
             <SearchModal open={showSearch} onClose={() => setShowSearch(false)} todos={todos} events={events} notes={notes} />
           </>

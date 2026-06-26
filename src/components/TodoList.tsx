@@ -552,13 +552,14 @@ export default function TodoList({ todos, setTodos }: Props) {
                         if (a.completed !== b.completed) return Number(a.completed) - Number(b.completed);
                         return sortByOrder(a, b);
                       })
-                      .map(todo => {
+                      .map((todo, i) => {
                         const pr = getPriorityStyle(todo.priority);
                         const hasTimer = todo.timerDuration !== null;
 
                         return (
                           <div
                             key={todo.id}
+                            style={{ animationDelay: `${i * 40}ms` }}
                             draggable={!todo.completed}
                             onDragStart={() => handleDragStart(todo.id)}
                             onDragOver={e => handleDragOver(e, todo.id)}
@@ -566,7 +567,7 @@ export default function TodoList({ todos, setTodos }: Props) {
                             onDrop={() => handleDrop(todo.id)}
                             onDragEnd={handleDragEnd}
                             className={cn(
-                              "group flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-slate-800/80 rounded-2xl border transition-all hover:shadow-md dark:hover:shadow-slate-900/50",
+                              "group flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-slate-800/80 rounded-2xl border transition-all hover:shadow-md dark:hover:shadow-slate-900/50 animate-slide-up",
                               todo.completed
                                 ? "bg-slate-50/60 dark:bg-slate-800/40 border-slate-100 dark:border-slate-700"
                                 : overdue && !isToday
