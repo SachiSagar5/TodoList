@@ -6,7 +6,7 @@ const API = API_URL;
 
 export function useApiCollection<T extends { id: string }>(
   collectionName: string
-): [T[], React.Dispatch<React.SetStateAction<T[]>>, boolean] {
+): [T[], React.Dispatch<React.SetStateAction<T[]>>, boolean, string | null] {
   const { user, signOut } = useAuth();
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,31 +17,34 @@ export function useApiCollection<T extends { id: string }>(
     if (!user || !token) return;
 
     try {
+      const changedItems: T[] = [];
+      const deletedIds: string[] = [];
+
       for (const item of next) {
         const prevItem = prev.find(p => p.id === item.id);
         if (!prevItem || JSON.stringify(prevItem) !== JSON.stringify(item)) {
-          console.log(`[api:${collectionName}] POST ${item.id}`, item);
-          const res = await fetch(`${API}/api/data/${collectionName}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-            body: JSON.stringify(item),
-          });
-          if (res.status === 401) { await signOut(); return; }
-          if (!res.ok) console.error(`POST ${collectionName} failed:`, await res.text());
+          changedItems.push(item);
         }
       }
 
       for (const prevItem of prev) {
         if (!next.find(n => n.id === prevItem.id)) {
-          console.log(`[api:${collectionName}] DELETE ${prevItem.id}`);
-          const res = await fetch(`${API}/api/data/${collectionName}/${prevItem.id}`, {
-            method: 'DELETE',
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          if (res.status === 401) { await signOut(); return; }
-          if (!res.ok) console.error(`DELETE ${collectionName} failed:`, await res.text());
+          deletedIds.push(prevItem.id);
         }
       }
+
+      if (changedItems.length === 0 && deletedIds.length === 0) return;
+
+      const res = await fetch(`${API}/api/data/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          updates: changedItems.map(item => ({ collection: collectionName, ...item })),
+          deletions: deletedIds.map(id => ({ collection: collectionName, id })),
+        }),
+      });
+      if (res.status === 401) { await signOut(); return; }
+      if (!res.ok) console.error(`Batch sync ${collectionName} failed:`, await res.text());
     } catch (err) {
       console.error(`Sync ${collectionName} error:`, err);
     }

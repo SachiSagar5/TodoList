@@ -17,8 +17,20 @@ function readDB() {
   }
 }
 
-function writeDB(data) {
-  writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
+let cachedDb = null;
+let writeTimer = null;
+
+function getDB() {
+  if (!cachedDb) cachedDb = readDB();
+  return cachedDb;
+}
+
+function saveDB() {
+  if (writeTimer) clearTimeout(writeTimer);
+  writeTimer = setTimeout(() => {
+    writeFileSync(DB_PATH, JSON.stringify(getDB(), null, 2));
+    writeTimer = null;
+  }, 300);
 }
 
 const app = express();
@@ -28,7 +40,7 @@ app.use(express.json());
 function authMiddleware(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'No token provided' });
-  const db = readDB();
+  const db = getDB();
   const session = db.sessions.find(s => s.token === token);
   if (!session) return res.status(401).json({ error: 'Invalid token' });
   req.userUid = session.uid;
@@ -43,7 +55,7 @@ app.post('/api/auth/signup', (req, res) => {
   if (!email || !password || !displayName) {
     return res.status(400).json({ error: 'Missing fields' });
   }
-  const db = readDB();
+  const db = getDB();
   if (db.users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
     return res.status(409).json({ code: 'auth/email-already-in-use' });
   }
@@ -55,7 +67,7 @@ app.post('/api/auth/signup', (req, res) => {
   db.users.push(user);
   const token = randomUUID();
   db.sessions.push({ uid, token });
-  writeDB(db);
+  saveDB();
   res.json({ token, user: { uid, email, displayName, photoURL: null } });
 });
 
@@ -64,20 +76,20 @@ app.post('/api/auth/signin', (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
-  const db = readDB();
+  const db = getDB();
   const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
   if (!user) return res.status(401).json({ code: 'auth/user-not-found' });
   if (user.password !== password) return res.status(401).json({ code: 'auth/wrong-password' });
   const token = randomUUID();
   db.sessions.push({ uid: user.uid, token });
-  writeDB(db);
+  saveDB();
   res.json({ token, user: { uid: user.uid, email: user.email, displayName: user.displayName, photoURL: null } });
 });
 
 app.post('/api/auth/signout', authMiddleware, (req, res) => {
   const token = req.headers.authorization?.replace('Bearer ', '');
   req.db.sessions = req.db.sessions.filter(s => s.token !== token);
-  writeDB(req.db);
+  saveDB();
   res.json({ ok: true });
 });
 
@@ -113,7 +125,7 @@ app.post('/api/data/:collection', authMiddleware, (req, res) => {
   } else {
     req.db[collection].push(item);
   }
-  writeDB(req.db);
+  saveDB();
   res.json(item);
 });
 
@@ -125,7 +137,37 @@ app.delete('/api/data/:collection/:id', authMiddleware, (req, res) => {
   req.db[collection] = req.db[collection].filter(
     i => !(i.id === id && i.uid === req.userUid)
   );
-  writeDB(req.db);
+  saveDB();
+  res.json({ ok: true });
+});
+
+/* ── Batch data endpoint ── */
+
+app.post('/api/data/batch', authMiddleware, (req, res) => {
+  const { updates, deletions } = req.body;
+  if (updates && Array.isArray(updates)) {
+    for (const item of updates) {
+      const { collection, ...data } = item;
+      if (!['todos', 'events', 'notes'].includes(collection)) continue;
+      const existing = req.db[collection].find(i => i.id === data.id && i.uid === req.userUid);
+      if (existing) {
+        req.db[collection] = req.db[collection].map(i =>
+          i.id === data.id && i.uid === req.userUid ? { ...data, uid: req.userUid } : i
+        );
+      } else {
+        req.db[collection].push({ ...data, uid: req.userUid });
+      }
+    }
+  }
+  if (deletions && Array.isArray(deletions)) {
+    for (const { collection, id } of deletions) {
+      if (!['todos', 'events', 'notes'].includes(collection)) continue;
+      req.db[collection] = req.db[collection].filter(
+        i => !(i.id === id && i.uid === req.userUid)
+      );
+    }
+  }
+  saveDB();
   res.json({ ok: true });
 });
 
