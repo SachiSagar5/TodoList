@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Plus, Trash2, CheckCircle2, Circle, ClipboardList,
   Eye, EyeOff, ChevronDown, ChevronRight, CalendarDays, AlertTriangle,
-  Timer, Play, Pause, RotateCcw, Edit3, X, GripVertical
+  Timer, Play, Pause, RotateCcw, Edit3, X, GripVertical, Maximize2
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { getToday, formatDateLabel, isOverdue } from '../utils/dates';
@@ -11,6 +11,7 @@ import type { Todo, Priority } from '../types';
 interface Props {
   todos: Todo[];
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
+  onFocusTask?: (todo: Todo) => void;
 }
 
 const PRIORITIES: { key: Priority; label: string; color: string; dot: string }[] = [
@@ -127,7 +128,7 @@ function TimerDisplay({ todo, setTodos }: { todo: Todo; setTodos: React.Dispatch
   );
 }
 
-export default function TodoList({ todos, setTodos }: Props) {
+export default function TodoList({ todos, setTodos, onFocusTask }: Props) {
   const [inputValue, setInputValue] = useState('');
   const [dueDate, setDueDate] = useState(getToday());
   const [priority, setPriority] = useState<Priority>('medium');
@@ -636,6 +637,15 @@ export default function TodoList({ todos, setTodos }: Props) {
                             </div>
 
                             <div className="flex items-center gap-1 opacity-60 sm:opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all">
+                              {!todo.completed && onFocusTask && (
+                                <button
+                                  onClick={() => onFocusTask(todo)}
+                                  className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-violet-500 dark:hover:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 rounded-lg transition-all outline-none"
+                                  title="Focus mode"
+                                >
+                                  <Maximize2 className="w-4 h-4" />
+                                </button>
+                              )}
                               <button
                                 onClick={() => openEdit(todo)}
                                 className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all outline-none"

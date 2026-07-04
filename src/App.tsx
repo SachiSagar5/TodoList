@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { ListTodo, CalendarRange, StickyNote, Timer, Sparkles, LogOut, Loader2, Sun, Moon, LayoutDashboard, Search, Download, Upload, Check } from 'lucide-react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { ListTodo, CalendarRange, StickyNote, Timer, Sparkles, LogOut, Loader2, Sun, Moon, LayoutDashboard, Search, Download, Upload, Check, BarChart3 } from 'lucide-react';
 import { cn } from './utils/cn';
 import { AuthProvider, useAuth, type AppUser } from './contexts/AuthContext';
 import { useTheme } from './contexts/ThemeContext';
@@ -11,7 +11,10 @@ import Planner from './components/Planner';
 import Notes from './components/Notes';
 import Pomodoro from './components/Pomodoro';
 import Dashboard from './components/Dashboard';
+import Analytics from './components/Analytics';
 import SearchModal from './components/SearchModal';
+import QuickAdd from './components/QuickAdd';
+import FocusMode from './components/FocusMode';
 import AuthPage from './components/AuthPage';
 import type { Tab, Todo, PlannerEvent, Note, AppData } from './types';
 
@@ -21,6 +24,7 @@ const TABS: { key: Tab; label: string; icon: React.ReactNode }[] = [
   { key: 'planner', label: 'Planner', icon: <CalendarRange className="w-5 h-5" /> },
   { key: 'notes', label: 'Notes', icon: <StickyNote className="w-5 h-5" /> },
   { key: 'pomodoro', label: 'Pomodoro', icon: <Timer className="w-5 h-5" /> },
+  { key: 'analytics', label: 'Analytics', icon: <BarChart3 className="w-5 h-5" /> },
 ];
 
 /* ───────── Dashboard with Firebase Firestore ───────── */
@@ -87,9 +91,25 @@ function Shell({
   const { dark, toggleTheme } = useTheme();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [focusTodo, setFocusTodo] = useState<Todo | null>(null);
   const [importStatus, setImportStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   useNotifications(events);
+
+  useEffect(() => {
+    const handle = (e: KeyboardEvent) => {
+      if (e.key === 'q' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          e.preventDefault();
+          setShowQuickAdd(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', handle);
+    return () => window.removeEventListener('keydown', handle);
+  }, []);
 
   const exportData = useCallback(() => {
     const data: AppData = { todos, events, notes };
@@ -323,12 +343,14 @@ function Shell({
           <>
             <main>
               {activeTab === 'dashboard' && <div key="dashboard" className="animate-slide-up"><Dashboard todos={todos} events={events} notes={notes} /></div>}
-              {activeTab === 'tasks' && <div key="tasks" className="animate-slide-up"><TodoList todos={todos} setTodos={setTodos} /></div>}
+              {activeTab === 'tasks' && <div key="tasks" className="animate-slide-up"><TodoList todos={todos} setTodos={setTodos} onFocusTask={setFocusTodo} /></div>}
               {activeTab === 'planner' && <div key="planner" className="animate-slide-up"><Planner events={events} setEvents={setEvents} /></div>}
               {activeTab === 'notes' && <div key="notes" className="animate-slide-up"><Notes notes={notes} setNotes={setNotes} /></div>}
               {activeTab === 'pomodoro' && <div key="pomodoro" className="animate-slide-up"><Pomodoro /></div>}
+              {activeTab === 'analytics' && <div key="analytics" className="animate-slide-up"><Analytics todos={todos} events={events} notes={notes} /></div>}
             </main>
             <SearchModal open={showSearch} onClose={() => setShowSearch(false)} todos={todos} events={events} notes={notes} />
+            <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} onAdd={(todo) => setTodos(prev => [todo, ...prev])} />
           </>
         )}
 
@@ -336,6 +358,14 @@ function Shell({
           <p>TaskMaster — Your personal productivity hub</p>
         </footer>
       </div>
+
+      {/* Focus Mode (full-screen overlay) */}
+      <FocusMode
+        todo={focusTodo}
+        onClose={() => setFocusTodo(null)}
+        onUpdate={(id, updates) => setTodos(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t))}
+        onComplete={(id) => setTodos(prev => prev.map(t => t.id === id ? { ...t, completed: true, timerStartedAt: null } : t))}
+      />
     </div>
   );
 }

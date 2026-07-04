@@ -40,4 +40,4 @@ export interface Note {
   updatedAt: number;
 }
 
-export type Tab = 'tasks' | 'planner' | 'notes' | 'pomodoro' | 'dashboard';
+export type Tab = 'tasks' | 'planner' | 'notes' | 'pomodoro' | 'dashboard' | 'analytics';
