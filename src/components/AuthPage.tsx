@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Mail, Lock, User, Eye, EyeOff, Sparkles, ArrowRight, AlertCircle, Sun, Moon
 } from 'lucide-react';
 import { cn } from '../utils/cn';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { API_URL } from '../config';
 
 type AuthMode = 'signin' | 'signup' | 'reset';
 
@@ -12,6 +13,13 @@ export default function AuthPage() {
   const { signIn, signUp, resetPassword, isFirebase } = useAuth();
   const { dark, toggleTheme } = useTheme();
   const [mode, setMode] = useState<AuthMode>('signin');
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`${API_URL}/api/auth/me`, { signal: controller.signal }).catch(() => {});
+    return () => controller.abort();
+  }, []);
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
