@@ -111,6 +111,38 @@ app.get('/api/data/:collection', authMiddleware, (req, res) => {
   res.json(sorted);
 });
 
+/* ── Batch data endpoint (must be before /:collection routes) ── */
+
+app.post('/api/data/batch', authMiddleware, (req, res) => {
+  const { updates, deletions } = req.body;
+  if (updates && Array.isArray(updates)) {
+    for (const item of updates) {
+      const { collection, ...data } = item;
+      if (!['todos', 'events', 'notes'].includes(collection)) continue;
+      const existing = req.db[collection].find(i => i.id === data.id && i.uid === req.userUid);
+      if (existing) {
+        req.db[collection] = req.db[collection].map(i =>
+          i.id === data.id && i.uid === req.userUid ? { ...data, uid: req.userUid } : i
+        );
+      } else {
+        req.db[collection].push({ ...data, uid: req.userUid });
+      }
+    }
+  }
+  if (deletions && Array.isArray(deletions)) {
+    for (const { collection, id } of deletions) {
+      if (!['todos', 'events', 'notes'].includes(collection)) continue;
+      req.db[collection] = req.db[collection].filter(
+        i => !(i.id === id && i.uid === req.userUid)
+      );
+    }
+  }
+  saveDB();
+  res.json({ ok: true });
+});
+
+/* ── Individual CRUD (defined after batch to avoid route conflict) ── */
+
 app.post('/api/data/:collection', authMiddleware, (req, res) => {
   const { collection } = req.params;
   if (!['todos', 'events', 'notes'].includes(collection)) {
@@ -137,36 +169,6 @@ app.delete('/api/data/:collection/:id', authMiddleware, (req, res) => {
   req.db[collection] = req.db[collection].filter(
     i => !(i.id === id && i.uid === req.userUid)
   );
-  saveDB();
-  res.json({ ok: true });
-});
-
-/* ── Batch data endpoint ── */
-
-app.post('/api/data/batch', authMiddleware, (req, res) => {
-  const { updates, deletions } = req.body;
-  if (updates && Array.isArray(updates)) {
-    for (const item of updates) {
-      const { collection, ...data } = item;
-      if (!['todos', 'events', 'notes'].includes(collection)) continue;
-      const existing = req.db[collection].find(i => i.id === data.id && i.uid === req.userUid);
-      if (existing) {
-        req.db[collection] = req.db[collection].map(i =>
-          i.id === data.id && i.uid === req.userUid ? { ...data, uid: req.userUid } : i
-        );
-      } else {
-        req.db[collection].push({ ...data, uid: req.userUid });
-      }
-    }
-  }
-  if (deletions && Array.isArray(deletions)) {
-    for (const { collection, id } of deletions) {
-      if (!['todos', 'events', 'notes'].includes(collection)) continue;
-      req.db[collection] = req.db[collection].filter(
-        i => !(i.id === id && i.uid === req.userUid)
-      );
-    }
-  }
   saveDB();
   res.json({ ok: true });
 });
