@@ -212,7 +212,7 @@ export default function Pomodoro() {
 
       {/* Timer circle */}
       <div className="relative flex items-center justify-center">
-        <svg className="w-64 h-64 -rotate-90" viewBox="0 0 200 200">
+        <svg className="w-56 sm:w-64 h-56 sm:h-64 -rotate-90 max-w-full" viewBox="0 0 200 200">
           <circle
             cx="100" cy="100" r="90"
             fill="none"
@@ -334,7 +334,7 @@ export default function Pomodoro() {
       {showSettings && (
         <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-slate-700 p-5 shadow-lg dark:shadow-slate-900/50 space-y-4">
           <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Timer Durations</h3>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <DurationControl label="Focus" value={workMinutes} onChange={changeWork} color="indigo" />
             <DurationControl label="Short Break" value={shortBreakMinutes} onChange={changeShortBreak} color="emerald" />
             <DurationControl label="Long Break" value={longBreakMinutes} onChange={changeLongBreak} color="amber" />

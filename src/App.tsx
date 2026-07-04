@@ -167,33 +167,33 @@ function Shell({
             </div>
 
             <div className="flex items-center gap-1.5 flex-shrink-0 min-w-0">
-              <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
                 {/* Search */}
                 <button
                   onClick={() => setShowSearch(true)}
-                  className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                  className="flex-shrink-0 p-2 sm:p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
                   title="Search (⌘K)"
                 >
-                  <Search className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400" />
                 </button>
 
                 {/* Export */}
                 <button
                   onClick={exportData}
-                  className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                  className="flex-shrink-0 p-2 sm:p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
                   title="Export data"
                 >
-                  <Download className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                  <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400" />
                 </button>
 
                 {/* Import */}
-                <label className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all cursor-pointer" title="Import data">
+                <label className="flex-shrink-0 p-2 sm:p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all cursor-pointer" title="Import data">
                   {importStatus === 'success' ? (
-                    <Check className="w-4 h-4 text-emerald-500" />
+                    <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-500" />
                   ) : importStatus === 'error' ? (
                     <span className="text-red-500 text-xs font-bold">!</span>
                   ) : (
-                    <Upload className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                    <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500 dark:text-slate-400" />
                   )}
                   <input type="file" accept=".json" onChange={importData} className="hidden" />
                 </label>
@@ -201,10 +201,10 @@ function Shell({
                 {/* Theme toggle */}
                 <button
                   onClick={toggleTheme}
-                  className="flex-shrink-0 p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
+                  className="flex-shrink-0 p-2 sm:p-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full hover:shadow-md transition-all"
                   title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
                 >
-                  {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-500" />}
+                  {dark ? <Sun className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" /> : <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-500" />}
                 </button>
               </div>
 
@@ -296,13 +296,13 @@ function Shell({
 
         {/* Tabs */}
         <nav className="flex items-center justify-center mb-8 overflow-x-auto scrollbar-none px-2 -mx-2">
-          <div className="flex items-center gap-1 bg-white dark:bg-slate-800 p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 flex-shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-1 bg-white dark:bg-slate-800 p-1 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-slate-100 dark:border-slate-700 flex-shrink-0">
             {TABS.map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={cn(
-                  "relative flex items-center gap-2 px-5 py-2.5 text-sm font-semibold rounded-xl transition-all",
+                  "relative flex items-center gap-1 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold rounded-xl transition-all whitespace-nowrap",
                   activeTab === tab.key
                     ? "bg-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-indigo-900/40"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700"

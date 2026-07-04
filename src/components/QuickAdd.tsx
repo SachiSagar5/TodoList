@@ -84,8 +84,8 @@ export default function QuickAdd({ open, onClose, onAdd }: Props) {
               placeholder="What needs to be done?"
               className="w-full px-4 py-3 text-base bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl outline-none focus:border-indigo-300 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900/30 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500 text-slate-900 dark:text-slate-200"
             />
-            <div className="flex items-center gap-3">
-              <div className="relative flex-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative flex-1 min-w-[140px]">
                 <CalendarDays className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                 <input
                   type="date"

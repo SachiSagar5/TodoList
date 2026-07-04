@@ -164,7 +164,7 @@ export default function Planner({ events, setEvents }: Props) {
         {/* Days grid */}
         <div className="grid grid-cols-7">
           {Array.from({ length: firstDay }).map((_, i) => (
-            <div key={`blank-${i}`} className="h-16 sm:h-20 border-b border-r border-slate-50 dark:border-slate-800" />
+            <div key={`blank-${i}`} className="h-14 sm:h-20 border-b border-r border-slate-50 dark:border-slate-800" />
           ))}
           {Array.from({ length: daysInMonth }).map((_, i) => {
             const day = i + 1;
@@ -179,14 +179,14 @@ export default function Planner({ events, setEvents }: Props) {
                 key={day}
                 onClick={() => setSelectedDate(ds)}
                 className={cn(
-                  "h-16 sm:h-20 border-b border-r border-slate-50 dark:border-slate-800 p-1.5 text-left transition-all hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 relative",
+                  "h-14 sm:h-20 border-b border-r border-slate-50 dark:border-slate-800 p-1 sm:p-1.5 text-left transition-all hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 relative",
                   isSelected && "bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-inset ring-indigo-300 dark:ring-indigo-500",
                   isPast && !isSelected && "bg-slate-50/40 dark:bg-slate-800/20"
                 )}
               >
                 <span
                   className={cn(
-                    "inline-flex items-center justify-center w-7 h-7 text-sm font-medium rounded-full",
+                    "inline-flex items-center justify-center w-6 sm:w-7 h-6 sm:h-7 text-[11px] sm:text-sm font-medium rounded-full",
                     isToday
                       ? "bg-indigo-600 text-white"
                       : isPast
@@ -198,11 +198,11 @@ export default function Planner({ events, setEvents }: Props) {
                 </span>
                 {dayEvents.length > 0 && (
                   <div className="flex flex-wrap gap-0.5 mt-0.5">
-                    {dayEvents.slice(0, 3).map(ev => (
-                      <div key={ev.id} className={cn("w-1.5 h-1.5 rounded-full", ev.color)} />
+                    {dayEvents.slice(0, 2).map(ev => (
+                      <div key={ev.id} className={cn("w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full", ev.color)} />
                     ))}
-                    {dayEvents.length > 3 && (
-                      <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">+{dayEvents.length - 3}</span>
+                    {dayEvents.length > 2 && (
+                      <span className="text-[8px] sm:text-[9px] text-slate-400 dark:text-slate-500 font-medium">+{dayEvents.length - 2}</span>
                     )}
                   </div>
                 )}

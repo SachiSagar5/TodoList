@@ -137,7 +137,7 @@ export default function FocusMode({ todo, onClose, onUpdate, onComplete }: Props
         {hasTimer && (
           <div className="flex flex-col items-center mb-10">
             <div className="relative mb-4">
-              <svg className="w-72 h-72 -rotate-90" viewBox="0 0 300 300">
+              <svg className="w-60 sm:w-72 h-60 sm:h-72 -rotate-90" viewBox="0 0 300 300">
                 <circle cx="150" cy="150" r="130" fill="none" stroke="currentColor" strokeWidth="6" className="text-white/5" />
                 <circle
                   cx="150" cy="150" r="130"
@@ -165,41 +165,41 @@ export default function FocusMode({ todo, onClose, onUpdate, onComplete }: Props
             </div>
 
             {/* Timer controls */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-4 sm:gap-6">
               <button
                 onClick={reset}
                 disabled={!hasTimer}
-                className="p-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 rounded-xl transition-all disabled:opacity-30"
+                className="p-2 sm:p-3 text-slate-500 hover:text-slate-300 hover:bg-white/5 rounded-xl transition-all disabled:opacity-30"
                 title="Reset timer"
               >
-                <RotateCcw className="w-6 h-6" />
+                <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
 
               {!isRunning ? (
                 <button
                   onClick={start}
                   disabled={isFinished}
-                  className="flex items-center justify-center w-20 h-20 bg-gradient-to-br from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 rounded-full transition-all active:scale-95 shadow-2xl shadow-indigo-500/30 disabled:opacity-50"
+                  className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 rounded-full transition-all active:scale-95 shadow-2xl shadow-indigo-500/30 disabled:opacity-50"
                   title={isFinished ? 'Timer complete' : 'Start'}
                 >
-                  <Play className="w-9 h-9 text-white ml-1" />
+                  <Play className="w-7 h-7 sm:w-9 sm:h-9 text-white ml-1" />
                 </button>
               ) : (
                 <button
                   onClick={pause}
-                  className="flex items-center justify-center w-20 h-20 bg-white/10 hover:bg-white/20 border-2 border-indigo-400/50 rounded-full transition-all active:scale-95"
+                  className="flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-white/10 hover:bg-white/20 border-2 border-indigo-400/50 rounded-full transition-all active:scale-95"
                   title="Pause"
                 >
-                  <Pause className="w-9 h-9 text-white" />
+                  <Pause className="w-7 h-7 sm:w-9 sm:h-9 text-white" />
                 </button>
               )}
 
               <button
                 onClick={() => onComplete(todo.id)}
-                className="p-3 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all"
+                className="p-2 sm:p-3 text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-xl transition-all"
                 title="Mark complete"
               >
-                <CheckCircle2 className="w-6 h-6" />
+                <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6" />
               </button>
             </div>
           </div>
