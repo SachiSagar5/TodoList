@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth, getToken } from '../contexts/AuthContext';
+import { enqueueSync } from '../utils/syncQueue';
 import { API_URL } from '../config';
 
 const API = API_URL;
@@ -57,7 +58,7 @@ export function useApiCollection<T extends { id: string }>(
     const prev = prevRef.current;
     if (prev === data) return;
     prevRef.current = data;
-    syncToServer(prev, data);
+    enqueueSync(() => syncToServer(prev, data));
   }, [data, loading, syncToServer]);
 
   useEffect(() => {

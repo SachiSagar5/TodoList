@@ -10,6 +10,7 @@ import {
   type User,
 } from 'firebase/auth';
 import { auth, googleProvider, isFirebaseConfigured } from '../firebase';
+import { flushSyncs } from '../utils/syncQueue';
 import { API_URL } from '../config';
 
 /* ── Local user type that mirrors what we need from Firebase User ── */
@@ -164,6 +165,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await firebaseSignOut(auth);
       return;
     }
+    await flushSyncs();
     if (_token) {
       try { await apiFetch('/api/auth/signout', { method: 'POST', headers: { Authorization: `Bearer ${_token}` } }); } catch {}
     }
